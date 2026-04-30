@@ -1,6 +1,8 @@
 import { Link } from "react-router";
 import { Footer } from "../components/layout/Footer";
 import { Header } from "../components/layout/Header";
+import { FAQ } from "../components/faq/FAQ";
+import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
 import { PropertyCard } from "../components/properties/PropertyCard";
 import { fallbackProperties } from "../data/properties";
 
@@ -262,6 +264,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+        <TestimonialsCarousel />
+        <FAQ />
       </main>
       <Footer />
     </div>
