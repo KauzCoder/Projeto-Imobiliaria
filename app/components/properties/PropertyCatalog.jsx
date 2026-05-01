@@ -11,7 +11,7 @@ export function PropertyCatalog({ properties, selectedProperty, onSelectProperty
       <div className="space-y-4 p-4">
         {properties.map((property) => (
           <PropertyCatalogCard
-            key={property.id}
+            key={property.key}
             property={property}
             onClick={() => onSelectProperty(property)}
             isSelected={selectedProperty?.id === property.id}

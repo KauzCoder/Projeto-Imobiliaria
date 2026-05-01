@@ -88,7 +88,7 @@ export function PropertyMap({
 
         return (
           <div
-            key={property.id}
+            key={property.key}
             className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
             style={{
               left: `calc(50% + ${markerPixel.x - centerPixel.x}px)`,

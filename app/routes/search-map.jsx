@@ -6,6 +6,7 @@ import { PropertyDetailPanel } from "../components/properties/PropertyDetailPane
 import { PropertyMap, propertyMapZoom } from "../components/properties/PropertyMap";
 import { fallbackProperties } from "../data/properties";
 import { getProperties } from "../services/propertyService";
+import { normalizeProperty, uniqueOptions } from "../utils/propertyUtils";
 
 const initialFilters = {
   country: "",
@@ -30,43 +31,6 @@ export function meta() {
       content: "Veja imoveis disponiveis com mapa interativo e detalhes de localizacao.",
     },
   ];
-}
-
-function normalizeProperty(property, index) {
-  const address = property.address ?? {};
-  const sourceId = property._id ?? property.id;
-  const bedrooms = Number(property.bedrooms ?? property.beds ?? 0);
-  const bathrooms = Number(property.bathrooms ?? property.baths ?? 0);
-  const parkingSpaces = Number(property.parkingSpaces ?? property.garage ?? 0);
-  const suites = Number(property.suites ?? Math.max(0, bedrooms - 2));
-  const area = Number(property.area ?? 0);
-
-  return {
-    id: sourceId ? `${sourceId}-${index}` : `property-${index}`,
-    title: property.title ?? `Imovel ${index + 1}`,
-    price: Number(property.price ?? 0),
-    locationText:
-      property.locationText ??
-      [address.street, address.district, address.city && `${address.city} - ${address.state}`]
-        .filter(Boolean)
-        .join(", "),
-    country: property.country ?? "Brasil",
-    city: address.city ?? property.city ?? "",
-    region: address.state ?? property.region ?? "",
-    neighborhood: address.district ?? property.neighborhood ?? "",
-    beds: bedrooms,
-    baths: bathrooms,
-    suites,
-    garage: parkingSpaces,
-    area,
-    image: property.imageUrl ?? property.image,
-    description: property.description ?? "",
-    mapLocation: property.location ?? { lat: -1.45583, lng: -48.50389 },
-  };
-}
-
-function uniqueOptions(properties, key) {
-  return [...new Set(properties.map((property) => property[key]).filter(Boolean))];
 }
 
 export default function SearchMap() {

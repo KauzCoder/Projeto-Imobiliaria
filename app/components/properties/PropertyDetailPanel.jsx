@@ -70,7 +70,7 @@ export function PropertyDetailPanel({ property, onClose }) {
             Fechar
           </button>
           <Link
-            to="/contato"
+            to={`/imoveis/${property.id}`}
             className="flex min-h-11 flex-1 items-center justify-center rounded-md bg-black text-sm font-medium text-white transition hover:bg-slate-800"
           >
             Ver informacoes
