@@ -29,6 +29,10 @@ export function normalizeProperty(property, index) {
     area,
     image,
     images: property.images ?? property.gallery ?? [image].filter(Boolean),
+    broker: property.broker ?? {
+      name: "Helena Alvez",
+      photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80",
+    },
     description: property.description ?? "",
     mapLocation: property.location ?? { lat: -1.45583, lng: -48.50389 },
   };
