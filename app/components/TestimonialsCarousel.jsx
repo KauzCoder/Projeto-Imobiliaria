@@ -70,7 +70,7 @@ const testimonialsRow2 = [
 
 function TestimonialCard({ testimonial }) {
   return (
-    <article className="mx-3 w-[340px] shrink-0 rounded-md border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="mx-3 w-[450px] shrink-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center gap-4">
         <img
           src={testimonial.photo}

@@ -73,7 +73,7 @@ export default function Home() {
             <div className="absolute inset-0 bg-slate-950/45" />
           </div>
 
-          <div className="relative mx-auto grid min-h-[860px] max-w-7xl content-end gap-10 px-6 pb-12 pt-28 sm:px-8 lg:px-10">
+          <div className="relative mx-auto grid min-h-[860px] max-w-7xl content-end gap-30 px-6 pb-12 pt-28 sm:px-8 lg:px-10">
             <div className="max-w-3xl">
               <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-200">
                 Compra, venda e aluguel
@@ -143,7 +143,7 @@ export default function Home() {
 
                 <button
                   type="submit"
-                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md bg-emerald-700 px-6 text-sm font-semibold uppercase tracking-[0.04em] text-white transition hover:bg-emerald-800"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md bg-emerald-400 px-6 text-sm font-semibold uppercase tracking-[0.04em] text-white transition hover:bg-emerald-500"
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                     <path
@@ -169,8 +169,8 @@ export default function Home() {
         </section>
 
         <section className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-10">
-          <div className="flex flex-col gap-10 pb-12">
-            <p className="text-center text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+          <div className="flex flex-col gap-20 pb-12">
+            <p className="text-center text-sm font-semibold uppercase tracking-[0.18em] text-emerald-400">
               Parceiros
             </p>
 
@@ -192,12 +192,12 @@ export default function Home() {
           <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
             <div className="flex items-start justify-between gap-6">
               <div>
-                <h2 className="text-2xl font-semibold text-slate-950">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-400">
+                  Cidades em destaque
+                </p>
+                <h2 className="mt-3 text-3xl font-semibold text-slate-950">
                   Propriedades por cidade
                 </h2>
-                <p className="mt-2 text-sm text-slate-500">
-                  Algumas locais onde mais buscamos seu imovel
-                </p>
               </div>
 
               <Link
@@ -245,7 +245,7 @@ export default function Home() {
           <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
             <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-400">
                   Ultimas propriedades
                 </p>
                 <h2 className="mt-3 text-3xl font-semibold text-slate-950">
