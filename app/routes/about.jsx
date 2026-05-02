@@ -6,7 +6,8 @@ export function meta() {
     { title: "Sobre nos | Morada Prime" },
     {
       name: "description",
-      content: "Conheca a historia, a atuacao e o processo de atendimento da Morada Prime.",
+      content:
+        "Conheca a historia, a atuacao e o processo de atendimento da Morada Prime.",
     },
   ];
 }
@@ -16,37 +17,50 @@ export default function About() {
     <div className="min-h-screen bg-stone-50">
       <Header />
       <main className="pt-24">
-        <section className="mx-auto grid max-w-7xl gap-10 px-6 py-12 sm:px-8 lg:grid-cols-[1fr_0.85fr] lg:px-10">
+        <section className="position">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
-              Sobre nos
-            </p>
-            <h1 className="mt-4 text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl">
-              Atendimento imobiliario com dados, contexto e proximidade.
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-slate-600">
-              A Morada Prime conecta compradores, locatarios e proprietarios por meio de um processo simples: curadoria de imoveis, leitura de mercado e acompanhamento em cada etapa da negociacao.
-            </p>
+            <img
+              src="/images/about.svg"
+              className="h-full w-full object-cover"
+              alt="Sobre a Morada Prime"
+            />
           </div>
-          <img
-            src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80"
-            alt="Equipe analisando oportunidades imobiliarias"
-            className="h-[420px] w-full rounded-md object-cover shadow-sm"
-          />
         </section>
 
-        <section className="bg-white py-16">
-          <div className="mx-auto grid max-w-7xl gap-8 px-6 sm:px-8 md:grid-cols-3 lg:px-10">
-            {[
-              ["Curadoria", "Selecionamos imoveis com documentacao, localizacao e perfil de compra bem definidos."],
-              ["Transparencia", "Apresentamos preco, bairro, caracteristicas e mapa para reduzir incertezas."],
-              ["Acompanhamento", "Conduzimos visitas, propostas e fechamento com comunicacao objetiva."],
-            ].map(([title, description]) => (
-              <article key={title} className="rounded-md border border-slate-200 p-6">
-                <h2 className="text-xl font-semibold text-slate-950">{title}</h2>
-                <p className="mt-4 leading-7 text-slate-600">{description}</p>
-              </article>
-            ))}
+        <section className="bg-white py-16 flex ">
+          <div className="flex flex-col">
+            <p>
+              A Ninho é uma empresa imobiliária dedicada a oferecer soluções
+              habitacionais de qualidade. Nosso compromisso é proporcionar aos
+              nossos clientes opções de moradia que aliam conforto, segurança e
+              acessibilidade. Com projetos que priorizam a privacidade e a
+              harmonia com a natureza, garantimos um ambiente agradável e limpo.
+              Além disso, nossas comunidades contam com diversas comodidades,
+              como áreas de lazer, campos esportivos, centros comerciais e
+              instituições de ensino, tudo para facilitar a vida dos nossos
+              moradores.
+            </p>
+            <img src="/images/enterprise.png" alt="Empresa Morada Prime" />
+            <div className="flex gap-10">
+              <div>
+                <h2>+1000</h2>
+                <p>Propriedades Disponíveis</p>
+              </div>
+              <div>
+                <h2>+60K</h2>
+                <p>Clientes Satisfeitos</p>
+              </div>
+              <div>
+                <h2>+70K</h2>
+                <p>Comentarios</p>
+              </div>
+            </div>
+          </div>
+
+
+          <div>
+            <h1>Conheça mais sobre nós e nossa trajetória.</h1>
+            <img src="/images/trajectory.png" alt="Trajetória da Morada Prime" />
           </div>
         </section>
 
@@ -60,15 +74,52 @@ export default function About() {
             </h2>
           </div>
           <div className="mt-8 grid gap-6 md:grid-cols-4">
-            {["Briefing", "Selecao", "Visita", "Negociacao"].map((step, index) => (
-              <div key={step} className="border-t border-slate-300 pt-5">
-                <span className="text-sm font-semibold text-emerald-700">0{index + 1}</span>
-                <h3 className="mt-3 text-lg font-semibold text-slate-950">{step}</h3>
-              </div>
-            ))}
+            {["Briefing", "Selecao", "Visita", "Negociacao"].map(
+              (step, index) => (
+                <div key={step} className="border-t border-slate-300 pt-5">
+                  <span className="text-sm font-semibold text-emerald-700">
+                    0{index + 1}
+                  </span>
+                  <h3 className="mt-3 text-lg font-semibold text-slate-950">
+                    {step}
+                  </h3>
+                </div>
+              ),
+            )}
           </div>
         </section>
-      </main>
+
+        <section className=" bg-gray-900 h-[611px]">
+          <div>
+            <h1></h1>
+            <p></p>
+          </div>
+          <div>
+            <ul>
+              <li>
+                <img src="" alt="" />
+                <h2></h2>
+                <p></p>
+              </li>
+              <li>
+                <img src="" alt="" />
+                <h2></h2>
+                <p></p>
+              </li>
+              <li>
+                <img src="" alt="" />
+                <h2></h2>
+                <p></p>
+              </li>
+              <li>
+                <img src="" alt="" />
+                <h2></h2>
+                <p></p>
+              </li>
+            </ul>
+          </div>
+        </section>
+      </main>''
       <Footer />
     </div>
   );
