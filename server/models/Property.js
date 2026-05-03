@@ -64,6 +64,24 @@ const propertySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    broker: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Broker",
+    },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    createdBy: {
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: "createdBy.model",
+      },
+      model: {
+        type: String,
+        enum: ["Admin", "SuperUser"],
+      },
+    },
     featured: {
       type: Boolean,
       default: false,
@@ -72,4 +90,8 @@ const propertySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const Property = mongoose.model("Property", propertySchema);
+propertySchema.index({ broker: 1 });
+propertySchema.index({ owner: 1 });
+propertySchema.index({ featured: -1, createdAt: -1 });
+
+export const Property = mongoose.models.Property || mongoose.model("Property", propertySchema);
