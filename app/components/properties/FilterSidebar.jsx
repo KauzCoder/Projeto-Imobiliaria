@@ -5,14 +5,14 @@ import { RoomSelector } from "../ui/RoomSelector";
 
 export function FilterSidebar({ filters, setFilters, onReset, options }) {
   return (
-    <aside className="h-full w-[303px] shrink-0 overflow-y-auto border-r border-black/40 bg-white p-6">
-      <div className="flex flex-col gap-4">
-        <div className="mb-1 flex items-center justify-between">
-          <h2 className="text-base font-extrabold text-black">Filtros</h2>
+    <aside className="h-full w-full overflow-y-auto border-black/10 bg-white p-6 lg:w-[303px] lg:border-r">
+      <div className="flex flex-col gap-[10px]">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="hidden text-base font-extrabold text-black lg:block">Filtros</h2>
           <button
             type="button"
             onClick={onReset}
-            className="text-xs font-semibold text-emerald-600 hover:underline"
+            className="text-xs font-semibold text-[#00b88a] transition hover:text-black"
           >
             Limpar tudo
           </button>

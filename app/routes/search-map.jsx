@@ -39,6 +39,8 @@ export default function SearchMap() {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [mapZoom, setMapZoom] = useState(propertyMapZoom.initial);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showCatalog, setShowCatalog] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -109,8 +111,13 @@ export default function SearchMap() {
     setMapZoom((currentZoom) => Math.max(currentZoom - 1, propertyMapZoom.min));
   };
 
+  const selectProperty = (property) => {
+    setSelectedProperty(property);
+    setShowCatalog(false);
+  };
+
   return (
-    <main className="flex h-screen overflow-hidden bg-slate-100">
+    <main className="relative flex h-screen overflow-hidden bg-[#dde7dc]">
       <div className="absolute left-4 top-4 z-50">
         <Link
           to="/"
@@ -123,7 +130,60 @@ export default function SearchMap() {
         </Link>
       </div>
 
-      <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} options={filterOptions} />
+      <button
+        type="button"
+        onClick={() => setShowFilters(true)}
+        className="absolute right-4 top-4 z-50 flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-black shadow-lg transition hover:shadow-xl lg:hidden"
+      >
+        <svg className="size-5" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M3 5h14M5 10h10M7 15h6" stroke="black" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+        Filtros
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setShowCatalog(true)}
+        className="absolute bottom-4 left-1/2 z-40 flex min-h-11 -translate-x-1/2 items-center gap-2 rounded-full bg-[#00ffbf] px-4 text-sm font-bold text-black shadow-lg transition hover:brightness-95 lg:hidden"
+      >
+        <svg className="size-5" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M4 5h12M4 10h12M4 15h12" stroke="black" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+        {filteredProperties.length} {filteredProperties.length === 1 ? "imovel" : "imoveis"}
+      </button>
+
+      <div className="hidden lg:block">
+        <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} options={filterOptions} />
+      </div>
+
+      {showFilters && (
+        <div
+          className="fixed inset-0 z-[70] bg-black/50 lg:hidden"
+          onClick={() => setShowFilters(false)}
+        >
+          <div
+            className="absolute bottom-0 left-0 top-0 w-[86vw] max-w-[330px] bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
+              <h2 className="text-lg font-bold text-black">Filtros</h2>
+              <button
+                type="button"
+                onClick={() => setShowFilters(false)}
+                className="grid size-10 place-items-center rounded-full transition hover:bg-slate-100"
+                aria-label="Fechar filtros"
+              >
+                <svg className="size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18M6 6l12 12" stroke="black" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div className="h-[calc(100vh-64px)] overflow-y-auto">
+              <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} options={filterOptions} />
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className="relative min-w-0 flex-1">
         <PropertyMap
@@ -131,21 +191,56 @@ export default function SearchMap() {
           properties={filteredProperties}
           zoom={mapZoom}
           isLoading={isLoading}
-          onSelectProperty={setSelectedProperty}
+          onSelectProperty={selectProperty}
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
         />
-        
+
         {selectedProperty && (
           <PropertyDetailPanel property={selectedProperty} onClose={() => setSelectedProperty(null)} />
         )}
       </section>
 
-      <PropertyCatalog
-        properties={filteredProperties}
-        selectedProperty={activeProperty}
-        onSelectProperty={setSelectedProperty}
-      />
+      <div className="hidden lg:block">
+        <PropertyCatalog
+          properties={filteredProperties}
+          selectedProperty={activeProperty}
+          onSelectProperty={selectProperty}
+        />
+      </div>
+
+      {showCatalog && (
+        <div
+          className="fixed inset-0 z-[70] bg-black/50 lg:hidden"
+          onClick={() => setShowCatalog(false)}
+        >
+          <div
+            className="absolute bottom-0 right-0 top-0 w-[88vw] max-w-[380px] bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
+              <h2 className="text-lg font-bold text-black">Imoveis</h2>
+              <button
+                type="button"
+                onClick={() => setShowCatalog(false)}
+                className="grid size-10 place-items-center rounded-full transition hover:bg-slate-100"
+                aria-label="Fechar lista de imoveis"
+              >
+                <svg className="size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6L6 18M6 6l12 12" stroke="black" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div className="h-[calc(100vh-64px)] overflow-y-auto">
+              <PropertyCatalog
+                properties={filteredProperties}
+                selectedProperty={activeProperty}
+                onSelectProperty={selectProperty}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
