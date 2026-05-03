@@ -6,4 +6,6 @@ export default [
   route("imoveis", "routes/search-map.jsx"),
   route("imoveis/:propertyId", "routes/property-details.jsx"),
   route("contato", "routes/contact.jsx"),
+  route("login", "routes/login.jsx"),
+  route("register", "routes/register.jsx"),
 ];
