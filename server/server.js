@@ -2,7 +2,12 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import { connectDatabase } from "./config/database.js";
+
+import accountRoutes from "./routes/accountRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import brokerRoutes from "./routes/brokerRoutes.js";
 import propertyRoutes from "./routes/propertyRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -12,6 +17,11 @@ const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
 
 app.use(cors({ origin: clientUrl }));
 app.use(express.json());
+
+app.use("/api/auth", authRoutes);
+app.use("/api/accounts", accountRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/brokers", brokerRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "imobiliaria-api" });
