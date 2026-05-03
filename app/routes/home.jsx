@@ -4,6 +4,10 @@ import { Header } from "../components/layout/Header";
 import { FAQ } from "../components/faq/FAQ";
 import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
 import { PropertyCard } from "../components/properties/PropertyCard";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Scrollbar } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/scrollbar";
 import { fallbackProperties } from "../data/properties";
 
 const partnerImages = [
@@ -63,6 +67,13 @@ export default function Home() {
     <div className="min-h-screen bg-stone-50">
       <Header />
       <main>
+        <style>{`
+          @media (min-width: 1024px) {
+            .home-swiper .swiper-scrollbar {
+              display: none;
+            }
+          }
+        `}</style>
         <section className="relative overflow-hidden bg-slate-950 text-white">
           <div className="absolute inset-0">
             <img
@@ -174,7 +185,7 @@ export default function Home() {
               Parceiros
             </p>
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="place-items-center grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
               {partnerImages.map((partner) => (
                 <img
                   key={partner.src}
@@ -217,26 +228,42 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {cityCards.map((city) => (
-                <Link
-                  key={city.city}
-                  to="/imoveis"
-                  className="group relative min-h-[500px] overflow-hidden rounded-md bg-slate-900 shadow-sm"
-                >
-                  <img
-                    src={city.image}
-                    alt={`Imoveis em ${city.city}`}
-                    className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/20 to-slate-950/55" />
-                  <div className="relative z-10 p-5 text-white">
-                    <h3 className="text-base font-semibold">{city.city}</h3>
-                    <p className="mt-1 text-xs text-white/75">{city.count}</p>
-                  </div>
-                </Link>
-              ))}
+            <div className="mt-8">
+              <Swiper
+                scrollbar={{ hide: true }}
+                modules={[Scrollbar]}
+                slidesPerView={1}
+                spaceBetween={20}
+                breakpoints={{
+                  640: { slidesPerView: 2 },
+                  1024: { slidesPerView: 4 },
+                  1800: { slidesPerView: 4, spaceBetween: 30 },
+                }}
+                className="mySwiper"
+              >
+                {cityCards.map((city) => (
+                  <SwiperSlide key={city.city}>
+                    <Link
+                      to="/imoveis"
+                      className="group relative min-h-[800px] overflow-hidden rounded-md bg-slate-900 shadow-sm"
+                    >
+                      <div className="transition duration-300 group-hover:scale-105">
+                        <img
+                          src={city.image}
+                          alt={`Imoveis em ${city.city}`}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/20 to-slate-950/55" />
+                        <div className="min-h-[500px] relative z-10 p-5 text-white">
+                          <h3 className="text-base font-semibold">{city.city}</h3>
+                          <p className="mt-1 text-xs text-white/75">{city.count}</p>
+                        </div>
+                      </div>
+                    </Link>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
             </div>
           </div>
         </section>
@@ -257,7 +284,29 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="mt-8 grid w-full gap-5 md:grid-cols-4">
+            <div className="mt-8 overflow-hidden lg:hidden">
+              <Swiper
+                slidesPerView={1}
+                spaceBetween={20}
+                scrollbar={{ draggable: true }}
+                modules={[Scrollbar]}
+                className="mySwiper home-swiper"
+                breakpoints={{
+                  640: { slidesPerView: 1.1, spaceBetween: 20 },
+                  768: { slidesPerView: 1.3, spaceBetween: 24 },
+                }}
+              >
+                {featuredProperties.map((property) => (
+                  <SwiperSlide key={property.id} className="w-full max-w-full">
+                    <div className="min-w-0">
+                      <PropertyCard property={property} />
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+
+            <div className="mt-8 hidden grid-cols-1 gap-5 lg:grid lg:grid-cols-4">
               {featuredProperties.map((property) => (
                 <PropertyCard key={property.id} property={property} />
               ))}
