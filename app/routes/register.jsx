@@ -42,6 +42,19 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex">
+      <div className="absolute left-4 top-4 z-50">
+        <Link
+          to="/entrar"
+          className="flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-black shadow-lg transition hover:shadow-xl"
+        >
+          <svg className="size-5" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M12 16L6 10L12 4" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Voltar
+        </Link>
+      </div>
+
+
       {/* Left Side - Image */}
       <div className="hidden lg:block flex-1 relative">
         <div className="absolute inset-0 bg-gradient-to-l from-[#00FFBF]/20 to-transparent" />

@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { currencyFormatter } from "../components/properties/currencyFormatter";
-import { fallbackProperties } from "../data/properties";
-import { getProperties } from "../services/propertyService";
-import { normalizeProperty } from "../utils/propertyUtils";
+import { getPropertyById } from "../services/propertyService";
 
 const fallbackGalleryImages = [
   "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
@@ -467,37 +465,59 @@ function DataDisclaimer() {
 
 export default function PropertyDetailsPage() {
   const { propertyId } = useParams();
-  const [properties, setProperties] = useState(fallbackProperties);
+  const [property, setProperty] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     let active = true;
 
-    getProperties()
-      .then((items) => {
-        if (!active || items.length === 0) return;
-        setProperties(items);
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
+    const fetchProperty = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await getPropertyById(propertyId);
+        if (active) {
+          setProperty(data);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err.message);
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    if (propertyId) {
+      fetchProperty();
+    }
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [propertyId]);
 
-  const normalizedProperties = useMemo(
-    () => properties.map((property, index) => normalizeProperty(property, index)),
-    [properties],
-  );
-
-  const property = normalizedProperties.find((item) => item.id === propertyId);
-
-  if (!property && isLoading) {
+  if (isLoading) {
     return (
       <main className="grid min-h-screen place-items-center bg-white p-8 text-sm font-semibold text-slate-600">
-        Carregando imovel...
+        Carregando imóvel...
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-white p-8 text-center">
+        <div>
+          <h1 className="text-2xl font-bold text-black">Erro ao carregar imóvel</h1>
+          <p className="mt-2 text-gray-600">{error}</p>
+          <Link to="/imoveis" className="mt-4 inline-flex rounded-md bg-black px-5 py-3 text-sm font-semibold text-white">
+            Voltar para busca
+          </Link>
+        </div>
       </main>
     );
   }
@@ -506,7 +526,7 @@ export default function PropertyDetailsPage() {
     return (
       <main className="grid min-h-screen place-items-center bg-white p-8 text-center">
         <div>
-          <h1 className="text-2xl font-bold text-black">Imovel nao encontrado</h1>
+          <h1 className="text-2xl font-bold text-black">Imóvel não encontrado</h1>
           <Link to="/imoveis" className="mt-4 inline-flex rounded-md bg-black px-5 py-3 text-sm font-semibold text-white">
             Voltar para busca
           </Link>
