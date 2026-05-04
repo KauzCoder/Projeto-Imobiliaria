@@ -1,4 +1,7 @@
 import { Router } from "express";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { allowRoles } from "../middlewares/roleMiddleware.js";
+
 import {
   createProperty,
   deleteProperty,
@@ -11,8 +14,8 @@ const router = Router();
 
 router.get("/", listProperties);
 router.get("/:id", getProperty);
-router.post("/", createProperty);
-router.put("/:id", updateProperty);
-router.delete("/:id", deleteProperty);
+router.post("/", authMiddleware, allowRoles("admin", "super_user", "corretor"), createProperty);
+router.put("/:id", authMiddleware, allowRoles("admin", "super_user", "corretor"), updateProperty);
+router.delete("/:id", authMiddleware, allowRoles("admin", "super_user"), deleteProperty);
 
 export default router;
