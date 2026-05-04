@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { PropertyPin } from "./PropertyPin";
 
 const tileSize = 256;
@@ -36,7 +36,7 @@ export const propertyMapZoom = {
   initial: 15,
 };
 
-export function PropertyMap({
+export const PropertyMap = React.memo(function PropertyMap({
   activeProperty,
   properties,
   zoom,
@@ -206,4 +206,4 @@ export function PropertyMap({
       </div>
     </section>
   );
-}
+});

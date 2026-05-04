@@ -10,7 +10,7 @@ export const fallbackProperties = [
     address: {
       street: "Rua Harmonia, 425",
       district: "Vila Madalena",
-      city: "Sao Paulo",
+      city: "São Paulo",
       state: "SP",
     },
     location: { lat: -23.55052, lng: -46.633308 },
@@ -33,7 +33,7 @@ export const fallbackProperties = [
     address: {
       street: "Rua das Acacias, 88",
       district: "Jardim Paulista",
-      city: "Sao Paulo",
+      city: "São Paulo",
       state: "SP",
     },
     location: { lat: -23.565577, lng: -46.65584 },
@@ -56,7 +56,7 @@ export const fallbackProperties = [
     address: {
       street: "Avenida Paulista, 1100",
       district: "Bela Vista",
-      city: "Sao Paulo",
+      city: "São Paulo",
       state: "SP",
     },
     location: { lat: -23.561414, lng: -46.655881 },

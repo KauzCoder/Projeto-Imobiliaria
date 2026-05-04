@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { FilterSidebar } from "../components/properties/FilterSidebar";
 import { PropertyCatalog } from "../components/properties/PropertyCatalog";
@@ -45,19 +45,29 @@ export default function SearchMap() {
   useEffect(() => {
     let active = true;
 
+    setIsLoading(true);
+    console.log("SearchMap: useEffect inicial rodando");
+
     getProperties()
       .then((items) => {
-        if (!active || items.length === 0) return;
-        setProperties(items);
+        console.log("SearchMap: getProperties retornou:", items);
+        if (!active) return;
+        if (items.length > 0) setProperties(items);
+      })
+      .catch((err) => {
+        console.error("SearchMap: erro ao buscar properties:", err);
       })
       .finally(() => {
-        if (active) setIsLoading(false);
+        if (active) {
+          setIsLoading(false);
+          console.log("SearchMap: carregamento completo");
+        }
       });
 
     return () => {
       active = false;
     };
-  }, []);
+  }, []); // <- array vazio, roda só uma vez
 
   const normalizedProperties = useMemo(
     () => properties.map((property, index) => normalizeProperty(property, index)),
@@ -67,11 +77,26 @@ export default function SearchMap() {
   const filterOptions = useMemo(
     () => ({
       countries: uniqueOptions(normalizedProperties, "country"),
-      cities: uniqueOptions(normalizedProperties, "city"),
-      regions: uniqueOptions(normalizedProperties, "region"),
-      neighborhoods: uniqueOptions(normalizedProperties, "neighborhood"),
+      regions: uniqueOptions(
+        filters.country
+          ? normalizedProperties.filter((property) => property.country === filters.country)
+          : normalizedProperties,
+        "region"
+      ),
+      cities: uniqueOptions(
+        filters.region
+          ? normalizedProperties.filter((property) => property.region === filters.region)
+          : normalizedProperties,
+        "city"
+      ),
+      neighborhoods: uniqueOptions(
+        filters.city
+          ? normalizedProperties.filter((property) => property.city === filters.city)
+          : normalizedProperties,
+        "neighborhood"
+      ),
     }),
-    [normalizedProperties],
+    [normalizedProperties, filters.country, filters.region, filters.city],
   );
 
   const filteredProperties = useMemo(() => {
@@ -99,22 +124,28 @@ export default function SearchMap() {
     filteredProperties[0] ??
     null;
 
+  useEffect(() => {
+    if (selectedProperty && !filteredProperties.some((property) => property.id === selectedProperty.id)) {
+      setSelectedProperty(null);
+    }
+  }, [filteredProperties, selectedProperty]);
+
   const resetFilters = () => {
     setFilters(initialFilters);
   };
 
-  const zoomIn = () => {
+  const zoomIn = useCallback(() => {
     setMapZoom((currentZoom) => Math.min(currentZoom + 1, propertyMapZoom.max));
-  };
+  }, []);
 
-  const zoomOut = () => {
+  const zoomOut = useCallback(() => {
     setMapZoom((currentZoom) => Math.max(currentZoom - 1, propertyMapZoom.min));
-  };
+  }, []);
 
-  const selectProperty = (property) => {
+  const selectProperty = useCallback((property) => {
     setSelectedProperty(property);
     setShowCatalog(false);
-  };
+  }, []);
 
   return (
     <main className="relative flex h-screen overflow-hidden bg-[#dde7dc]">
@@ -153,7 +184,7 @@ export default function SearchMap() {
       </button>
 
       <div className="hidden lg:block">
-        <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} options={filterOptions} />
+        <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} options={filterOptions} properties={normalizedProperties} />
       </div>
 
       {showFilters && (
@@ -179,7 +210,7 @@ export default function SearchMap() {
               </button>
             </div>
             <div className="h-[calc(100vh-64px)] overflow-y-auto">
-              <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} options={filterOptions} />
+              <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} options={filterOptions} properties={normalizedProperties} />
             </div>
           </div>
         </div>
@@ -195,6 +226,12 @@ export default function SearchMap() {
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
         />
+
+        {!isLoading && filteredProperties.length === 0 && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/75 p-6 text-center text-sm font-semibold text-slate-700">
+            Nenhum imóvel encontrado para estes filtros.
+          </div>
+        )}
 
         {selectedProperty && (
           <PropertyDetailPanel property={selectedProperty} onClose={() => setSelectedProperty(null)} />
