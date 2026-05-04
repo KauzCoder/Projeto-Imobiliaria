@@ -1,8 +1,9 @@
 import axios from "axios";
 import { fallbackProperties } from "../data/properties";
 import { normalizeProperty } from "../utils/propertyUtils";
+import { getApiUrl } from "./apiConfig";
 
-const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
+const apiUrl = getApiUrl();
 
 export async function getProperties() {
   try {
