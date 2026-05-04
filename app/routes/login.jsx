@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,6 +31,28 @@ export default function Login() {
       {/* Left Side - Form */}
       <div className="flex-1 flex items-center justify-center px-4 py-12 bg-white">
         <div className="max-w-md w-full space-y-8">
+          <div className="absolute left-4 top-4 z-50">
+            <Link
+              to="/"
+              className="flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-black shadow-lg transition hover:shadow-xl"
+            >
+              <svg
+                className="size-5"
+                fill="none"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 16L6 10L12 4"
+                  stroke="black"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Voltar
+            </Link>
+          </div>
           <div>
             <h2 className="text-center font-['Poppins:Bold',sans-serif] text-[36px] text-black">
               Bem-vindo de volta
