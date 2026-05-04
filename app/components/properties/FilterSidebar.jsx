@@ -3,16 +3,63 @@ import { FilterSelect } from "../ui/FilterSelect";
 import { PriceRangeInput } from "../ui/PriceRangeInput";
 import { RoomSelector } from "../ui/RoomSelector";
 
-export function FilterSidebar({ filters, setFilters, onReset, options }) {
+export function FilterSidebar({ filters, setFilters, onReset, options, properties }) {
+  const handleCountryChange = (value) => {
+    setFilters((prev) => ({
+      ...prev,
+      country: value,
+      region: "",
+      city: "",
+      neighborhood: "",
+    }));
+  };
+
+  const handleRegionChange = (value) => {
+    setFilters((prev) => ({
+      ...prev,
+      region: value,
+      city: "",
+      neighborhood: "",
+    }));
+  };
+
+  const handleCityChange = (value) => {
+    setFilters((prev) => ({
+      ...prev,
+      city: value,
+      neighborhood: "",
+    }));
+  };
+
+  const handleNeighborhoodChange = (value) => {
+    setFilters((prev) => ({
+      ...prev,
+      neighborhood: value,
+    }));
+  };
+
+  // Filtrar opções baseado na seleção anterior
+  const filteredRegions = filters.country
+    ? [...new Set(properties.filter(p => p.country === filters.country).map(p => p.region))]
+    : options.regions;
+
+  const filteredCities = filters.region
+    ? [...new Set(properties.filter(p => p.region === filters.region).map(p => p.city))]
+    : options.cities;
+
+  const filteredNeighborhoods = filters.city
+    ? [...new Set(properties.filter(p => p.city === filters.city).map(p => p.neighborhood))]
+    : options.neighborhoods;
+
   return (
-    <aside className="h-full w-[303px] shrink-0 overflow-y-auto border-r border-black/40 bg-white p-6">
-      <div className="flex flex-col gap-4">
-        <div className="mb-1 flex items-center justify-between">
-          <h2 className="text-base font-extrabold text-black">Filtros</h2>
+    <aside className="h-full w-full overflow-y-auto border-black/10 bg-white p-6 lg:w-[303px] lg:border-r">
+      <div className="flex flex-col gap-[10px]">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="hidden text-base font-extrabold text-black lg:block">Filtros</h2>
           <button
             type="button"
             onClick={onReset}
-            className="text-xs font-semibold text-emerald-600 hover:underline"
+            className="text-xs font-semibold text-[#00b88a] transition hover:text-black"
           >
             Limpar tudo
           </button>
@@ -22,29 +69,29 @@ export function FilterSidebar({ filters, setFilters, onReset, options }) {
           label="Pais"
           placeholder="Selecione o pais"
           value={filters.country}
-          onChange={(value) => setFilters((prev) => ({ ...prev, country: value }))}
+          onChange={handleCountryChange}
           options={options.countries}
-        />
-        <FilterSelect
-          label="Cidade"
-          placeholder="Selecione a cidade"
-          value={filters.city}
-          onChange={(value) => setFilters((prev) => ({ ...prev, city: value }))}
-          options={options.cities}
         />
         <FilterSelect
           label="Regiao"
           placeholder="Selecione a regiao"
           value={filters.region}
-          onChange={(value) => setFilters((prev) => ({ ...prev, region: value }))}
-          options={options.regions}
+          onChange={handleRegionChange}
+          options={filteredRegions}
+        />
+        <FilterSelect
+          label="Cidade"
+          placeholder="Selecione a cidade"
+          value={filters.city}
+          onChange={handleCityChange}
+          options={filteredCities}
         />
         <FilterSelect
           label="Bairro"
           placeholder="Selecione o bairro"
           value={filters.neighborhood}
-          onChange={(value) => setFilters((prev) => ({ ...prev, neighborhood: value }))}
-          options={options.neighborhoods}
+          onChange={handleNeighborhoodChange}
+          options={filteredNeighborhoods}
         />
 
         <PriceRangeInput

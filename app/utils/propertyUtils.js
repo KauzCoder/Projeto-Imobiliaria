@@ -39,5 +39,7 @@ export function normalizeProperty(property, index) {
 }
 
 export function uniqueOptions(properties, key) {
-  return [...new Set(properties.map((property) => property[key]).filter(Boolean))];
+  return [...new Set(
+    properties.map((property) => property[key]).filter((value) => value && value.trim() !== "")
+  )].sort();
 }

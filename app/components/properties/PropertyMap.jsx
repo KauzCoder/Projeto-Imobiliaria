@@ -1,3 +1,4 @@
+import React, { useEffect, useRef, useState } from "react";
 import { PropertyPin } from "./PropertyPin";
 
 const tileSize = 256;
@@ -35,7 +36,7 @@ export const propertyMapZoom = {
   initial: 15,
 };
 
-export function PropertyMap({
+export const PropertyMap = React.memo(function PropertyMap({
   activeProperty,
   properties,
   zoom,
@@ -44,15 +45,76 @@ export function PropertyMap({
   onZoomIn,
   onZoomOut,
 }) {
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragState = useRef({ isDragging: false, lastX: 0, lastY: 0, pointerId: null });
   const centerLocation = activeProperty?.mapLocation ?? { lat: -1.45583, lng: -48.50389 };
   const centerPixel = latLngToWorldPixel(centerLocation, zoom);
-  const centerTileX = Math.floor(centerPixel.x / tileSize);
-  const centerTileY = Math.floor(centerPixel.y / tileSize);
-  const centerOffsetX = centerPixel.x - centerTileX * tileSize;
-  const centerOffsetY = centerPixel.y - centerTileY * tileSize;
+  const viewportCenterPixel = {
+    x: centerPixel.x - panOffset.x,
+    y: centerPixel.y - panOffset.y,
+  };
+  const centerTileX = Math.floor(viewportCenterPixel.x / tileSize);
+  const centerTileY = Math.floor(viewportCenterPixel.y / tileSize);
+  const centerOffsetX = viewportCenterPixel.x - centerTileX * tileSize;
+  const centerOffsetY = viewportCenterPixel.y - centerTileY * tileSize;
+
+  useEffect(() => {
+    setPanOffset({ x: 0, y: 0 });
+  }, [activeProperty?.id, zoom]);
+
+  const startPan = (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    if (event.target.closest("button, a, input, select, textarea, label")) return;
+
+    dragState.current = {
+      isDragging: true,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      pointerId: event.pointerId,
+    };
+    setIsDragging(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const movePan = (event) => {
+    if (!dragState.current.isDragging || dragState.current.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - dragState.current.lastX;
+    const deltaY = event.clientY - dragState.current.lastY;
+
+    dragState.current.lastX = event.clientX;
+    dragState.current.lastY = event.clientY;
+
+    setPanOffset((currentOffset) => ({
+      x: currentOffset.x + deltaX,
+      y: currentOffset.y + deltaY,
+    }));
+  };
+
+  const stopPan = (event) => {
+    if (dragState.current.pointerId !== event.pointerId) return;
+
+    dragState.current = { isDragging: false, lastX: 0, lastY: 0, pointerId: null };
+    setIsDragging(false);
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+  };
+
+  const stopControlEvent = (event) => {
+    event.stopPropagation();
+  };
 
   return (
-    <section className="relative h-full min-h-0 w-full overflow-hidden bg-[#dde7dc]">
+    <section
+      className={`relative h-full min-h-0 w-full touch-none overflow-hidden bg-[#dde7dc] ${
+        isDragging ? "cursor-grabbing" : "cursor-grab"
+      }`}
+      onPointerDown={startPan}
+      onPointerMove={movePan}
+      onPointerUp={stopPan}
+      onPointerCancel={stopPan}
+      onPointerLeave={stopPan}
+    >
       <div className="absolute inset-0">
         {tileOffsets.flatMap((xOffset) =>
           tileOffsets.map((yOffset) => {
@@ -76,6 +138,7 @@ export function PropertyMap({
         )}
       </div>
       <div className="pointer-events-none absolute inset-0 bg-white/10" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/10 to-transparent" />
 
       {isLoading && (
         <div className="absolute left-1/2 top-5 z-20 -translate-x-1/2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-600 shadow">
@@ -91,8 +154,8 @@ export function PropertyMap({
             key={property.key}
             className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
             style={{
-              left: `calc(50% + ${markerPixel.x - centerPixel.x}px)`,
-              top: `calc(50% + ${markerPixel.y - centerPixel.y}px)`,
+              left: `calc(50% + ${markerPixel.x - viewportCenterPixel.x}px)`,
+              top: `calc(50% + ${markerPixel.y - viewportCenterPixel.y}px)`,
             }}
           >
             <PropertyPin
@@ -104,10 +167,20 @@ export function PropertyMap({
         );
       })}
 
-      <div className="absolute bottom-8 right-8 z-20 flex flex-col overflow-hidden rounded bg-white shadow-lg">
+      <div
+        className="absolute bottom-20 left-4 z-30 flex flex-col overflow-hidden rounded bg-white shadow-lg lg:bottom-8 lg:left-auto lg:right-8"
+        onPointerDown={stopControlEvent}
+        onPointerMove={stopControlEvent}
+        onPointerUp={stopControlEvent}
+        onPointerCancel={stopControlEvent}
+        onClick={stopControlEvent}
+      >
         <button
           type="button"
-          onClick={onZoomIn}
+          onClick={(event) => {
+            event.stopPropagation();
+            onZoomIn();
+          }}
           disabled={zoom === maxMapZoom}
           className="border-b p-3 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           aria-label="Aumentar zoom"
@@ -118,7 +191,10 @@ export function PropertyMap({
         </button>
         <button
           type="button"
-          onClick={onZoomOut}
+          onClick={(event) => {
+            event.stopPropagation();
+            onZoomOut();
+          }}
           disabled={zoom === minMapZoom}
           className="p-3 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           aria-label="Diminuir zoom"
@@ -130,4 +206,4 @@ export function PropertyMap({
       </div>
     </section>
   );
-}
+});

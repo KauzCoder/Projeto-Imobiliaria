@@ -1,4 +1,9 @@
-import { currencyFormatter } from "./currencyFormatter";
+const compactCurrencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
 
 export function PropertyPin({ price, onClick, isSelected }) {
   return (
@@ -16,9 +21,7 @@ export function PropertyPin({ price, onClick, isSelected }) {
             fill={isSelected ? "#00ffbf" : "#231f20"}
           />
         </svg>
-        <span className="whitespace-nowrap text-xs font-extrabold text-[#231f20]">
-          {currencyFormatter.format(price)}
-        </span>
+        <span className="whitespace-nowrap text-xs font-extrabold text-[#231f20]">{compactCurrencyFormatter.format(price)}</span>
       </span>
     </button>
   );

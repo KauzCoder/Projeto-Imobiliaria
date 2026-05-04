@@ -21,7 +21,7 @@ export function PropertyDetailPanel({ property, onClose }) {
   };
 
   return (
-    <section className="absolute left-1/2 top-1/2 z-50 w-[min(400px,calc(100%-32px))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-white shadow-2xl">
+    <section className="absolute left-1/2 top-1/2 z-[60] max-h-[90vh] w-[min(400px,calc(100%-32px))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white shadow-2xl">
       <div className="relative h-[245px]">
         <img src={images[currentImage]} alt={property.title} className="h-full w-full object-cover" />
         <button
@@ -72,7 +72,7 @@ export function PropertyDetailPanel({ property, onClose }) {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-5 sm:p-6">
         <div className="mb-4 flex items-center gap-3 border-b border-slate-200 pb-4">
           <img src={broker.photo} alt={broker.name} className="size-12 rounded-full object-cover" />
           <div>
@@ -83,7 +83,7 @@ export function PropertyDetailPanel({ property, onClose }) {
 
         <p className="mb-4 text-sm font-bold text-black">{property.locationText}</p>
 
-        <div className="mb-6 flex gap-3">
+        <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
           {[
             ["Metros", property.area],
             ["Quartos", property.beds],
@@ -105,7 +105,7 @@ export function PropertyDetailPanel({ property, onClose }) {
           {currencyFormatter.format(property.price)}
         </p>
 
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           <button
             type="button"
             onClick={onClose}
