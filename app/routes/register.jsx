@@ -218,7 +218,7 @@ export default function Register() {
                   Já tem uma conta?{" "}
                 </span>
                 <Link
-                  to="/login"
+                  to="/entrar"
                   className="font-['Inter:Medium',sans-serif] text-[14px] text-[#00FFBF] hover:text-[#00d9a8]"
                 >
                   Fazer login

@@ -130,7 +130,7 @@ export default function Login() {
                   Não tem uma conta?{" "}
                 </span>
                 <Link
-                  to="/register"
+                  to="/cadastrar"
                   className="font-['Inter:Medium',sans-serif] text-[14px] text-[#00FFBF] hover:text-[#00d9a8]"
                 >
                   Cadastre-se
