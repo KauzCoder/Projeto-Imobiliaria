@@ -70,7 +70,14 @@ export default function SearchMap() {
         console.error("SearchMap: erro ao buscar properties:", err);
         if (active) {
           setProperties([]);
-          setLoadError("Nao foi possivel carregar os imoveis do banco de dados.");
+          const status = err.response?.status;
+          const serverMessage = err.response?.data?.message;
+          const message = serverMessage || err.message || "Erro desconhecido.";
+          setLoadError(
+            status
+              ? `Nao foi possivel carregar os imoveis do banco de dados. Erro ${status}: ${message}`
+              : `Nao foi possivel carregar os imoveis do banco de dados. ${message}`,
+          );
         }
       })
       .finally(() => {

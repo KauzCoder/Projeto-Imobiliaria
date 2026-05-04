@@ -14,8 +14,24 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 4000;
 const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+const allowedOrigins = [
+  clientUrl,
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+].filter(Boolean);
 
-app.use(cors({ origin: clientUrl }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origem nao permitida pelo CORS: ${origin}`));
+    },
+  }),
+);
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
