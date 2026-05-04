@@ -10,6 +10,9 @@ import {
 import "./app.css";
 
 export const links = () => [
+  { rel: "manifest", href: "/manifest.json" },
+  { rel: "icon", href: "/favicon.ico" },
+  { rel: "apple-touch-icon", href: "/pwa-icon.svg" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
@@ -28,6 +31,7 @@ export function Layout({ children }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#34ff9a" />
         <Meta />
         <Links />
       </head>
@@ -35,6 +39,19 @@ export function Layout({ children }) {
         {children}
         <ScrollRestoration />
         <Scripts />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/pwabuilder-sw.js").catch((error) => {
+      console.error("Falha ao registrar service worker:", error);
+    });
+  });
+}
+`,
+          }}
+        />
       </body>
     </html>
   );
