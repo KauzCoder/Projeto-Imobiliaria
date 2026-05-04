@@ -7,8 +7,9 @@
     "dev": "react-router dev",
     "dev:client": "react-router dev",
     "dev:server": "node server/server.js",
-    "start": "react-router-serve ./build/server/index.js",
-    "start:api": "node server/server.js"
+    "start": "node server/server.js",
+    "start:api": "node server/server.js",
+    "start:web": "react-router-serve ./build/server/index.js"
   },
   "dependencies": {
     "@react-router/node": "7.14.0",
