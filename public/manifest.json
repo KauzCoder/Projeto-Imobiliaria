@@ -1,0 +1,31 @@
+{
+  "background_color": "#009e6c",
+  "description": "Encontre casas, apartamentos e imoveis comerciais com atendimento consultivo.",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Ninho Imoveis",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Ninho",
+  "start_url": "/",
+  "theme_color": "#34ff9a",
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "maskable"
+    }
+  ],
+  "lang": "pt",
+  "categories": [
+    "business",
+    "shopping"
+  ]
+}
