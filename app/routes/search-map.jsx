@@ -4,7 +4,6 @@ import { FilterSidebar } from "../components/properties/FilterSidebar";
 import { PropertyCatalog } from "../components/properties/PropertyCatalog";
 import { PropertyDetailPanel } from "../components/properties/PropertyDetailPanel";
 import { PropertyMap, propertyMapZoom } from "../components/properties/PropertyMap";
-import { fallbackProperties } from "../data/properties";
 import { getProperties } from "../services/propertyService";
 import { normalizeProperty, uniqueOptions } from "../utils/propertyUtils";
 
@@ -37,7 +36,7 @@ export function meta() {
 
 export default function SearchMap() {
   const [searchParams] = useSearchParams();
-  const [properties, setProperties] = useState(fallbackProperties);
+  const [properties, setProperties] = useState([]);
   const [filters, setFilters] = useState(() => ({
     ...initialFilters,
     country: searchParams.get("country") ?? "",
@@ -51,6 +50,7 @@ export default function SearchMap() {
   }));
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [mapZoom, setMapZoom] = useState(propertyMapZoom.initial);
   const [showFilters, setShowFilters] = useState(false);
   const [showCatalog, setShowCatalog] = useState(false);
@@ -59,14 +59,19 @@ export default function SearchMap() {
     let active = true;
 
     setIsLoading(true);
+    setLoadError("");
 
-    getProperties()
+    getProperties({ useFallback: false })
       .then((items) => {
         if (!active) return;
-        if (items.length > 0) setProperties(items);
+        setProperties(items);
       })
       .catch((err) => {
         console.error("SearchMap: erro ao buscar properties:", err);
+        if (active) {
+          setProperties([]);
+          setLoadError("Nao foi possivel carregar os imoveis do banco de dados.");
+        }
       })
       .finally(() => {
         if (active) {
@@ -239,9 +244,15 @@ export default function SearchMap() {
           onZoomOut={zoomOut}
         />
 
-        {!isLoading && filteredProperties.length === 0 && (
+        {!isLoading && loadError && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/80 p-6 text-center text-sm font-semibold text-slate-700">
+            {loadError}
+          </div>
+        )}
+
+        {!isLoading && !loadError && filteredProperties.length === 0 && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/75 p-6 text-center text-sm font-semibold text-slate-700">
-            Nenhum imóvel encontrado para estes filtros.
+            Nenhum imovel encontrado para estes filtros.
           </div>
         )}
 

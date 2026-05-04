@@ -155,13 +155,13 @@ export default function Home() {
       const current = cities.get(property.city) ?? {
         city: property.city,
         count: 0,
-        image: property.image,
+        image: property.image || "/images/about.svg",
       };
 
       cities.set(property.city, {
         ...current,
         count: current.count + 1,
-        image: current.image || property.image,
+        image: current.image || property.image || "/images/about.svg",
       });
     });
 
@@ -408,44 +408,50 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="mt-8">
-              <Swiper
-                scrollbar={{ hide: true }}
-                modules={[Scrollbar]}
-                slidesPerView={1}
-                spaceBetween={20}
-                breakpoints={{
-                  640: { slidesPerView: 2 },
-                  1024: { slidesPerView: 4 },
-                  1800: { slidesPerView: 4, spaceBetween: 30 },
-                }}
-                className="mySwiper"
-              >
-                {cityCards.map((city) => (
-                  <SwiperSlide key={city.city}>
-                    <Link
-                      to={`/imoveis?city=${encodeURIComponent(city.city)}`}
-                      className="group relative min-h-[800px] overflow-hidden rounded-md bg-slate-900 shadow-sm"
-                    >
-                      <div className="transition duration-300 group-hover:scale-105">
-                        <img
-                          src={city.image}
-                          alt={`Imoveis em ${city.city}`}
-                          className="absolute inset-0 h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/20 to-slate-950/55" />
-                        <div className="min-h-[500px] relative z-10 p-5 text-white">
-                          <h3 className="text-base font-semibold">{city.city}</h3>
-                          <p className="mt-1 text-xs text-white/75">
-                            {city.count} {city.count === 1 ? "propriedade" : "propriedades"}
-                          </p>
+            <div className="mt-8 overflow-hidden">
+              {cityCards.length > 0 ? (
+                <Swiper
+                  scrollbar={{ draggable: true, hide: true }}
+                  modules={[Scrollbar]}
+                  slidesPerView={1}
+                  spaceBetween={20}
+                  breakpoints={{
+                    640: { slidesPerView: 2 },
+                    1024: { slidesPerView: 4 },
+                    1800: { slidesPerView: 4, spaceBetween: 30 },
+                  }}
+                  className="mySwiper city-swiper"
+                >
+                  {cityCards.map((city) => (
+                    <SwiperSlide key={city.city}>
+                      <Link
+                        to={`/imoveis?city=${encodeURIComponent(city.city)}`}
+                        className="group relative block h-[460px] overflow-hidden rounded-md bg-slate-900 shadow-sm sm:h-[540px] lg:h-[680px]"
+                      >
+                        <div className="h-full transition duration-300 group-hover:scale-105">
+                          <img
+                            src={city.image}
+                            alt={`Imoveis em ${city.city}`}
+                            className="absolute inset-0 h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/20 to-slate-950/55" />
+                          <div className="relative z-10 flex h-full flex-col justify-end p-5 text-white">
+                            <h3 className="text-base font-semibold">{city.city}</h3>
+                            <p className="mt-1 text-xs text-white/75">
+                              {city.count} {city.count === 1 ? "propriedade" : "propriedades"}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </Link>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+                      </Link>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              ) : (
+                <div className="rounded-md border border-slate-200 bg-slate-50 p-6 text-sm font-medium text-slate-600">
+                  Nenhuma cidade disponivel no banco de dados.
+                </div>
+              )}
             </div>
           </div>
         </section>

@@ -5,15 +5,20 @@ import { getApiUrl } from "./apiConfig";
 
 const apiUrl = getApiUrl();
 
-export async function getProperties() {
+export async function getProperties({ useFallback = true } = {}) {
   try {
     const { data } = await axios.get(`${apiUrl}/properties`);
+    const properties = Array.isArray(data) ? data : data.properties ?? [];
 
-    return data.map((property) => ({
+    return properties.map((property) => ({
       ...property,
       id: property._id ?? property.id ?? crypto.randomUUID(),
     }));
   } catch (error) {
+    if (!useFallback) {
+      throw error;
+    }
+
     console.warn("API indisponivel. Usando dados locais.", error);
     return fallbackProperties;
   }
