@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { currencyFormatter } from "../components/properties/currencyFormatter";
-import { fallbackProperties } from "../data/properties";
-import { getProperties } from "../services/propertyService";
-import { normalizeProperty } from "../utils/propertyUtils";
+import { getPropertyById } from "../services/propertyService";
 
 const fallbackGalleryImages = [
   "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
@@ -56,16 +54,16 @@ function PropertyGallery({ property }) {
   };
 
   return (
-    <div className="relative h-[504px] w-full overflow-hidden rounded-2xl">
+    <div className="relative h-[300px] w-full overflow-hidden rounded-[15px] sm:h-[400px] lg:h-[504px]">
       <img src={images[currentImage]} alt={property.title} className="h-full w-full object-cover" />
-      <div className="absolute bottom-0 left-0 right-0 h-[242px] bg-gradient-to-t from-black via-black/50 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-[150px] bg-gradient-to-t from-black via-black/50 to-transparent sm:h-[200px] lg:h-[242px]" />
 
       <Link
         to="/imoveis"
-        className="absolute left-4 top-4 rounded-full bg-black p-3 text-white transition hover:bg-slate-800"
+        className="absolute left-3 top-3 rounded-full bg-black p-2 text-white transition hover:bg-slate-800 sm:left-4 sm:top-4 sm:p-3"
         aria-label="Voltar para busca"
       >
-        <svg className="size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </Link>
@@ -73,10 +71,10 @@ function PropertyGallery({ property }) {
       <button
         type="button"
         onClick={prevImage}
-        className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/70 p-3 text-white transition hover:bg-black"
+        className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/70 p-2 text-white transition hover:bg-black sm:left-4 sm:p-3"
         aria-label="Imagem anterior"
       >
-        <svg className="size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
@@ -84,21 +82,21 @@ function PropertyGallery({ property }) {
       <button
         type="button"
         onClick={nextImage}
-        className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/70 p-3 text-white transition hover:bg-black"
+        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/70 p-2 text-white transition hover:bg-black sm:right-4 sm:p-3"
         aria-label="Proxima imagem"
       >
-        <svg className="size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M9 6L15 12L9 18" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
-      <div className="absolute bottom-24 left-0 right-0 flex justify-center gap-2">
+      <div className="absolute bottom-16 left-0 right-0 flex justify-center gap-2 sm:bottom-20 lg:bottom-24">
         {images.map((image, index) => (
           <button
             key={image}
             type="button"
             onClick={() => setCurrentImage(index)}
-            className={`size-3 rounded-full transition ${
+            className={`size-2.5 rounded-full transition sm:size-3 ${
               index === currentImage ? "bg-white" : "bg-white/50 hover:bg-white/75"
             }`}
             aria-label={`Mostrar imagem ${index + 1}`}
@@ -106,13 +104,13 @@ function PropertyGallery({ property }) {
         ))}
       </div>
 
-      <div className="absolute right-4 top-4 rounded-full bg-black/70 px-3 py-1 text-sm font-semibold text-white">
+      <div className="absolute right-3 top-3 rounded-full bg-black/70 px-2 py-1 text-xs font-semibold text-white sm:right-4 sm:top-4 sm:px-3 sm:text-sm">
         {currentImage + 1} / {images.length}
       </div>
 
-      <div className="absolute bottom-8 left-6 right-6">
-        <p className="mb-2 text-[19px] font-bold text-white">{property.locationText}</p>
-        <p className="text-[17px] font-bold text-[#00d82f]">Abaixo da media</p>
+      <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 lg:bottom-8">
+        <p className="mb-1 text-[15px] font-bold text-white sm:mb-2 sm:text-[17px] lg:text-[19px]">{property.locationText}</p>
+        <p className="text-[14px] font-bold text-[#00d82f] sm:text-[15px] lg:text-[17px]">Abaixo da media</p>
       </div>
     </div>
   );
@@ -208,14 +206,14 @@ function PropertyStats({ property }) {
   ];
 
   return (
-    <div className="my-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="my-8 grid grid-cols-2 gap-4 sm:my-10 sm:gap-6 lg:my-12 lg:grid-cols-4 lg:gap-8">
       {stats.map((stat) => (
-        <div key={stat.label} className="flex flex-col items-center gap-3 rounded-xl border border-black/5 bg-white px-4 py-5 shadow-sm">
-          <div className="grid size-14 place-items-center rounded-full bg-[#e1ece6]">
+        <div key={stat.label} className="flex flex-col items-center gap-2 rounded-xl border border-black/5 bg-white px-3 py-4 shadow-sm sm:gap-3 sm:px-4 sm:py-5">
+          <div className="grid size-12 place-items-center rounded-full bg-[#e1ece6] sm:size-14">
             <StatIcon type={stat.icon} />
           </div>
-          <span className="text-xs font-bold text-[#5b5b5b]">{stat.label}</span>
-          <p className="text-center text-base font-bold text-black">{stat.value}</p>
+          <span className="text-center text-[11px] font-bold text-[#5b5b5b] sm:text-xs">{stat.label}</span>
+          <p className="text-center text-sm font-bold text-black sm:text-base">{stat.value}</p>
         </div>
       ))}
     </div>
@@ -299,11 +297,11 @@ function MetricIcon({ type }) {
 function MetricItem({ icon, label, value }) {
   return (
     <div className="rounded-xl border border-black/5 bg-white p-4 text-center shadow-sm">
-      <div className="mx-auto mb-3 grid size-14 place-items-center rounded-full bg-[#e1ece6]">
+      <div className="mx-auto mb-3 grid size-12 place-items-center rounded-full bg-[#e1ece6] sm:size-14">
         <MetricIcon type={icon} />
       </div>
-      <p className="mb-2 text-sm font-bold text-[#6e6e6e]">{label}</p>
-      <p className="text-sm font-semibold text-black">{value}</p>
+      <p className="mb-2 text-[11px] font-bold text-[#6e6e6e] sm:text-sm">{label}</p>
+      <p className="text-xs font-semibold text-black sm:text-sm">{value}</p>
     </div>
   );
 }
@@ -314,10 +312,12 @@ function MarketMetrics({ property }) {
 
   return (
     <div>
-      <div className="mb-8 grid gap-6 sm:grid-cols-3">
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:mb-8 sm:grid-cols-3 sm:gap-6">
         <MetricItem icon="currentPrice" label="Preco atual" value={currencyFormatter.format(property.price)} />
         <MetricItem icon="average" label="Media da area" value={currencyFormatter.format(areaAverage)} />
-        <MetricItem icon="notice" label="Tempo de aviso" value="1 Semana" />
+        <div className="col-span-2 sm:col-span-1">
+          <MetricItem icon="notice" label="Tempo de aviso" value="1 Semana" />
+        </div>
       </div>
 
       <MetricItem icon="growth" label="Potencial de aumento de preco" value={increasePotential} />
@@ -327,14 +327,14 @@ function MarketMetrics({ property }) {
 
 function PropertyDetails({ property }) {
   return (
-    <section className="mb-8 rounded-[13px] border border-[#ddd] bg-[#f9f9f9] p-8">
+    <section className="mb-6 rounded-[13px] border border-[#ddd] bg-[#f9f9f9] p-4 sm:mb-8 sm:p-6 lg:p-8">
       <PropertyGallery property={property} />
       <PropertyStats property={property} />
 
-      <div className="mb-8 grid gap-8 lg:grid-cols-2">
+      <div className="mb-6 grid gap-6 sm:mb-8 sm:gap-8 lg:grid-cols-2">
         <div>
-          <h2 className="mb-4 text-[19px] font-bold text-black">Descricao detalhada</h2>
-          <p className="text-justify text-base font-semibold leading-relaxed text-[#404040]">
+          <h2 className="mb-3 text-[17px] font-bold text-black sm:mb-4 sm:text-[19px]">Descricao detalhada</h2>
+          <p className="text-justify text-sm font-semibold leading-relaxed text-[#404040] sm:text-[15px] lg:text-base">
             {property.description}
           </p>
         </div>
@@ -344,10 +344,10 @@ function PropertyDetails({ property }) {
 
       <Link
         to="/contato"
-        className="mx-auto flex min-h-12 w-fit items-center gap-3 rounded-md bg-[#00d82f] px-20 text-base font-bold text-white transition hover:bg-[#00b827]"
+        className="mx-auto flex min-h-12 w-full items-center justify-center gap-3 rounded-md bg-[#00d82f] px-8 text-sm font-bold text-white transition hover:bg-[#00b827] sm:w-fit sm:px-12 sm:text-base lg:px-20"
       >
         ENTRAR EM CONTATO
-        <svg className="size-6 rotate-90" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="size-5 rotate-90 sm:size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M17 14L12 9L7 14" stroke="white" strokeWidth="1.5" />
         </svg>
       </Link>
@@ -357,52 +357,53 @@ function PropertyDetails({ property }) {
 
 function InspectionSchedule() {
   return (
-    <div className="rounded-2xl border border-black/10 bg-white p-6">
-      <h3 className="mb-2 text-base font-bold text-black">Horarios de inspecao</h3>
+    <div className="rounded-2xl border border-black/10 bg-white p-4 sm:p-6">
+      <h3 className="mb-2 text-[15px] font-bold text-black sm:text-base">Horarios de inspecao</h3>
       <p className="mb-4 text-[10px] font-semibold text-[#6e6e6e]">
         As visitas e inspecoes ocorrem nesse horario.
       </p>
-      <p className="mb-6 text-xs font-semibold text-[#1d9e75]">Segunda, 7 Agosto, 7:00 pm - 14:00 pm</p>
+      <p className="mb-4 text-[11px] font-semibold text-[#1d9e75] sm:mb-6 sm:text-xs">Segunda, 7 Agosto, 7:00 pm - 14:00 pm</p>
       <button
         type="button"
-        className="flex items-center gap-2 rounded bg-[#e1ece6] px-6 py-3 text-xs font-bold text-[#1d9e75] transition hover:bg-[#d0ddd5]"
+        className="flex w-full items-center justify-center gap-2 rounded bg-[#e1ece6] px-4 py-2 text-[11px] font-bold text-[#1d9e75] transition hover:bg-[#d0ddd5] sm:px-6 sm:py-3 sm:text-xs"
       >
-        <svg className="size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <rect x="3" y="4" width="18" height="18" rx="2" stroke="#1D9E75" strokeWidth="2" />
           <line x1="9" y1="1" x2="9" y2="4" stroke="#1D9E75" strokeWidth="2" />
           <line x1="15" y1="1" x2="15" y2="4" stroke="#1D9E75" strokeWidth="2" />
         </svg>
-        ADICIONAR AO CALENDARIO
+        <span className="hidden sm:inline">ADICIONAR AO CALENDARIO</span>
+        <span className="sm:hidden">ADICIONAR</span>
       </button>
     </div>
   );
 }
 
-function AgentContact() {
+function AgentContact({ broker }) {
   return (
-    <div className="rounded-2xl border border-black/10 bg-white p-6">
-      <h3 className="mb-4 text-base font-bold text-black">Detalhes de agendamento</h3>
+    <div className="rounded-2xl border border-black/10 bg-white p-4 sm:p-6">
+      <h3 className="mb-3 text-[15px] font-bold text-black sm:mb-4 sm:text-base">Detalhes de agendamento</h3>
 
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-3 flex items-center gap-3 sm:mb-4">
         <img
-          src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80"
-          alt="Helena Alvez"
-          className="size-14 rounded-full object-cover"
+          src={broker.photo}
+          alt={broker.name}
+          className="size-12 rounded-full object-cover sm:size-14"
         />
         <div>
-          <p className="text-sm font-semibold text-[#1d9e75]">Helena Alvez</p>
+          <p className="text-[13px] font-semibold text-[#1d9e75] sm:text-sm">{broker.name}</p>
           <p className="text-[10px] font-semibold text-[#989898]">Corretora</p>
         </div>
       </div>
 
-      <p className="mb-6 text-[10px] font-semibold leading-relaxed text-[#6e6e6e]">
+      <p className="mb-4 text-[10px] font-semibold leading-relaxed text-[#6e6e6e] sm:mb-6">
         Corretora com 25 anos de experiencia no mercado imobiliario, oferecendo atendimento de qualidade e confianca.
       </p>
       <Link
         to="/contato"
-        className="flex w-full items-center justify-center gap-2 rounded bg-[#e1ece6] px-6 py-2 text-xs font-bold text-[#1d9e75] transition hover:bg-[#d0ddd5]"
+        className="flex w-full items-center justify-center gap-2 rounded bg-[#e1ece6] px-4 py-2 text-[11px] font-bold text-[#1d9e75] transition hover:bg-[#d0ddd5] sm:px-6 sm:text-xs"
       >
-        <svg className="size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" stroke="#1D9E75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         Contate um agente
@@ -413,7 +414,7 @@ function AgentContact() {
 
 function DetailLocationMap({ property }) {
   return (
-    <div className="relative h-[375px] overflow-hidden rounded-2xl">
+    <div className="relative h-[300px] overflow-hidden rounded-2xl sm:h-[350px] lg:h-[375px]">
       <iframe
         title={`Mapa de ${property.title}`}
         src={mapUrlFor(property)}
@@ -424,20 +425,26 @@ function DetailLocationMap({ property }) {
         href={externalMapUrlFor(property)}
         target="_blank"
         rel="noreferrer"
-        className="absolute left-3 top-3 rounded bg-white px-3 py-1 text-xs text-[#0369f0] transition hover:bg-slate-100"
+        className="absolute left-3 top-3 rounded bg-white px-2 py-1 text-[10px] text-[#0369f0] transition hover:bg-slate-100 sm:px-3 sm:text-xs"
       >
-        View larger map
+        <span className="hidden sm:inline">View larger map</span>
+        <span className="sm:hidden">Ver mapa</span>
       </a>
     </div>
   );
 }
 
 function LocationSection({ property }) {
+  const broker = property.broker ?? {
+    name: "Helena Alvez",
+    photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80",
+  };
+
   return (
-    <section className="mb-8 rounded-[13px] border border-[#ddd] bg-[#f9f9f9] p-8">
-      <div className="grid gap-8 lg:grid-cols-3">
+    <section className="mb-6 rounded-[13px] border border-[#ddd] bg-[#f9f9f9] p-4 sm:mb-8 sm:p-6 lg:p-8">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-3">
         <InspectionSchedule />
-        <AgentContact />
+        <AgentContact broker={broker} />
         <DetailLocationMap property={property} />
       </div>
     </section>
@@ -446,7 +453,7 @@ function LocationSection({ property }) {
 
 function DataDisclaimer() {
   return (
-    <section className="rounded-[13px] border border-[#ddd] bg-[#f9f9f9] p-6">
+    <section className="rounded-[13px] border border-[#ddd] bg-[#f9f9f9] p-4 sm:p-6">
       <p className="mb-3 text-base font-bold text-black">Sobre os dados apresentados</p>
       <p className="text-[10px] font-semibold text-[#6e6e6e]">
         As metricas apresentadas sao baseadas em dados do mercado imobiliario e podem sofrer variacoes ao longo do
@@ -458,37 +465,59 @@ function DataDisclaimer() {
 
 export default function PropertyDetailsPage() {
   const { propertyId } = useParams();
-  const [properties, setProperties] = useState(fallbackProperties);
+  const [property, setProperty] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     let active = true;
 
-    getProperties()
-      .then((items) => {
-        if (!active || items.length === 0) return;
-        setProperties(items);
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
+    const fetchProperty = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await getPropertyById(propertyId);
+        if (active) {
+          setProperty(data);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err.message);
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    if (propertyId) {
+      fetchProperty();
+    }
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [propertyId]);
 
-  const normalizedProperties = useMemo(
-    () => properties.map((property, index) => normalizeProperty(property, index)),
-    [properties],
-  );
-
-  const property = normalizedProperties.find((item) => item.id === propertyId);
-
-  if (!property && isLoading) {
+  if (isLoading) {
     return (
       <main className="grid min-h-screen place-items-center bg-white p-8 text-sm font-semibold text-slate-600">
-        Carregando imovel...
+        Carregando imóvel...
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-white p-8 text-center">
+        <div>
+          <h1 className="text-2xl font-bold text-black">Erro ao carregar imóvel</h1>
+          <p className="mt-2 text-gray-600">{error}</p>
+          <Link to="/imoveis" className="mt-4 inline-flex rounded-md bg-black px-5 py-3 text-sm font-semibold text-white">
+            Voltar para busca
+          </Link>
+        </div>
       </main>
     );
   }
@@ -497,7 +526,7 @@ export default function PropertyDetailsPage() {
     return (
       <main className="grid min-h-screen place-items-center bg-white p-8 text-center">
         <div>
-          <h1 className="text-2xl font-bold text-black">Imovel nao encontrado</h1>
+          <h1 className="text-2xl font-bold text-black">Imóvel não encontrado</h1>
           <Link to="/imoveis" className="mt-4 inline-flex rounded-md bg-black px-5 py-3 text-sm font-semibold text-white">
             Voltar para busca
           </Link>
@@ -507,12 +536,12 @@ export default function PropertyDetailsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white py-8">
+    <main className="min-h-screen bg-white py-4 sm:py-6 lg:py-8">
       <div className="mx-auto max-w-[1200px] px-4">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-[32px] font-bold text-black">Caracteristicas do Imovel</h1>
+        <div className="mb-6 flex items-center justify-between sm:mb-8">
+          <h1 className="text-[22px] font-bold text-black sm:text-[28px] lg:text-[32px]">Caracteristicas do Imovel</h1>
           <button type="button" className="rounded-full p-2 transition hover:bg-slate-100" aria-label="Favoritar">
-            <svg className="size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+            <svg className="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#00FFBF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
