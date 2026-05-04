@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router";
+import { clearAuthSession, getStoredAuth, subscribeAuthChanges } from "../../services/authService";
 
 const navItems = [
   { to: "/", label: "Inicio" },
@@ -70,19 +72,32 @@ function Message() {
   );
 }
 
-function Profile() {
+function Profile({ account }) {
+  const initial = account?.name?.charAt(0)?.toUpperCase() ?? "N";
+
   return (
     <button
       type="button"
       aria-label="Perfil"
       className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-emerald-300/40 bg-emerald-400 text-sm font-bold text-slate-950 transition hover:opacity-80"
     >
-      N
+      {initial}
     </button>
   );
 }
 
 export function Header() {
+  const [auth, setAuth] = useState({ token: "", account: null });
+
+  useEffect(() => {
+    const updateAuth = () => setAuth(getStoredAuth());
+
+    updateAuth();
+    return subscribeAuthChanges(updateAuth);
+  }, []);
+
+  const isLoggedIn = Boolean(auth.token);
+
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-[#17181c]/95 text-white shadow-sm backdrop-blur">
       <div className="mx-auto flex min-h-25 max-w-7xl items-center justify-between gap-4 px-6 sm:px-8 lg:px-10">
@@ -113,11 +128,30 @@ export function Header() {
             Ver imoveis
           </Link>
 
-          <div className="hidden items-center gap-[15px] lg:flex">
-            <Bell />
-            <Message />
-            <Profile />
-          </div>
+          {isLoggedIn ? (
+            <div className="hidden items-center gap-[15px] lg:flex">
+              <Bell />
+              <Message />
+              <Profile account={auth.account} />
+              <button
+                type="button"
+                onClick={() => {
+                  clearAuthSession();
+                  setAuth({ token: "", account: null });
+                }}
+                className="min-h-10 rounded-full border border-white/10 px-4 text-sm font-semibold text-white transition hover:border-emerald-300 hover:text-emerald-300"
+              >
+                Sair
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/entrar"
+              className="hidden min-h-10 items-center justify-center rounded-full border border-white/20 px-5 text-sm font-semibold text-white transition hover:border-emerald-300 hover:text-emerald-300 sm:inline-flex"
+            >
+              Entrar
+            </Link>
+          )}
 
           <nav className="flex items-center rounded-full border border-white/10 bg-white/5 p-1 md:hidden">
             {navItems.map((item) => (
@@ -134,6 +168,18 @@ export function Header() {
                 {item.label}
               </NavLink>
             ))}
+            {!isLoggedIn && (
+              <NavLink
+                to="/entrar"
+                className={({ isActive }) =>
+                  `rounded-full px-3 py-2 text-xs font-semibold transition ${
+                    isActive ? "bg-emerald-400 text-slate-950" : "text-white hover:text-emerald-300"
+                  }`
+                }
+              >
+                Entrar
+              </NavLink>
+            )}
           </nav>
         </div>
       </div>

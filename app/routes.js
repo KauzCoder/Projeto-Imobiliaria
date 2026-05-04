@@ -5,4 +5,5 @@ export default [
   route("sobre", "routes/about.jsx"),
   route("imoveis", "routes/properties.jsx"),
   route("contato", "routes/contact.jsx"),
+  route("entrar", "routes/login.jsx"),
 ];
