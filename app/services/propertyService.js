@@ -1,5 +1,6 @@
 import axios from "axios";
 import { fallbackProperties } from "../data/properties";
+import { normalizeProperty } from "../utils/propertyUtils";
 
 const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
 
@@ -13,6 +14,22 @@ export async function getProperties() {
     }));
   } catch (error) {
     console.warn("API indisponivel. Usando dados locais.", error);
-    return [];
+    return fallbackProperties;
+  }
+}
+
+export async function getPropertyById(propertyId) {
+  try {
+    const { data } = await axios.get(`${apiUrl}/properties/${propertyId}`);
+    return normalizeProperty(data, 0);
+  } catch (error) {
+    const fallbackProperty = fallbackProperties.find((property) => String(property.id) === String(propertyId));
+
+    if (fallbackProperty) {
+      return normalizeProperty(fallbackProperty, 0);
+    }
+
+    const message = error.response?.data?.message ?? "Imovel nao encontrado.";
+    throw new Error(message);
   }
 }

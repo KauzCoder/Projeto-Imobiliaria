@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 import { currencyFormatter } from "../components/properties/currencyFormatter";
 import { getPropertyById } from "../services/propertyService";
@@ -55,18 +55,20 @@ function PropertyGallery({ property }) {
 
   return (
     <div className="relative h-[300px] w-full overflow-hidden rounded-[15px] sm:h-[400px] lg:h-[504px]">
+      <div className="absolute left-4 top-4 z-50">
+        <Link
+          to="/imoveis"
+          className="flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-black shadow-lg transition hover:shadow-xl"
+        >
+          <svg className="size-5" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M12 16L6 10L12 4" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Voltar
+        </Link>
+      </div>
+
       <img src={images[currentImage]} alt={property.title} className="h-full w-full object-cover" />
       <div className="absolute bottom-0 left-0 right-0 h-[150px] bg-gradient-to-t from-black via-black/50 to-transparent sm:h-[200px] lg:h-[242px]" />
-
-      <Link
-        to="/imoveis"
-        className="absolute left-3 top-3 rounded-full bg-black p-2 text-white transition hover:bg-slate-800 sm:left-4 sm:top-4 sm:p-3"
-        aria-label="Voltar para busca"
-      >
-        <svg className="size-5 sm:size-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </Link>
 
       <button
         type="button"

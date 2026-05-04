@@ -8,18 +8,18 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError("");
     setIsLoading(true);
 
     try {
       if (email && password) {
-        window.location.href = "/profile";
+        navigate("/");
       } else {
-        setError("Preencha todos os campos");
+        setError("Preencha todos os campos.");
       }
-    } catch (err) {
+    } catch {
       setError("Erro ao fazer login. Tente novamente.");
     } finally {
       setIsLoading(false);
@@ -27,50 +27,55 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12 bg-white">
-        <div className="max-w-md w-full space-y-8">
-          <div className="absolute left-4 top-4 z-50">
-            <Link
-              to="/"
-              className="flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-black shadow-lg transition hover:shadow-xl"
-            >
-              <svg
-                className="size-5"
-                fill="none"
-                viewBox="0 0 20 20"
-                aria-hidden="true"
-              >
-                <path
-                  d="M12 16L6 10L12 4"
-                  stroke="black"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Voltar
-            </Link>
-          </div>
-          <div>
-            <h2 className="text-center font-['Poppins:Bold',sans-serif] text-[36px] text-black">
-              Bem-vindo de volta
-            </h2>
-            <p className="mt-2 text-center font-['Inter:Regular',sans-serif] text-[16px] text-[#6f6f6f]">
-              Acesse sua conta para continuar
-            </p>
-          </div>
+    <main className="min-h-screen bg-slate-950 text-white">
+      <div className="grid min-h-screen lg:grid-cols-[0.95fr_1.05fr]">
+        <section className="relative flex min-h-[320px] overflow-hidden lg:min-h-screen">
+          <img
+            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1400&q=80"
+            alt="Casa moderna iluminada"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/35 via-slate-950/20 to-slate-950/90 lg:bg-gradient-to-r lg:from-slate-950/25 lg:via-slate-950/20 lg:to-slate-950" />
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block font-['Inter:Medium',sans-serif] text-[14px] text-black mb-2"
-                >
-                  Email
-                </label>
+          <div className="relative z-10 flex w-full flex-col justify-between p-6 sm:p-8 lg:p-10">
+            <Link to="/" className="inline-flex w-fit items-center gap-3 text-sm font-semibold text-white transition hover:text-emerald-300">
+              <span className="grid size-9 place-items-center rounded-full bg-white/12 backdrop-blur">
+                <svg className="size-5" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M12 16L6 10L12 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              Voltar para home
+            </Link>
+
+            <div className="max-w-xl pt-20 lg:pb-10">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-200">
+                Ninho Imoveis
+              </p>
+              <h1 className="mt-5 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+                Acesse sua conta e continue sua busca.
+              </h1>
+              <p className="mt-5 max-w-md text-sm leading-7 text-white/80 sm:text-base">
+                Guarde favoritos, acompanhe contatos e encontre oportunidades com mais rapidez.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="flex items-center justify-center bg-white px-6 py-10 text-slate-950 sm:px-8 lg:px-12">
+          <div className="w-full max-w-md">
+            <div className="mb-8">
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-600">Entrar</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                Bem-vindo de volta
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-500">
+                Use seu email e senha para acessar sua area.
+              </p>
+            </div>
+
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              <label className="block">
+                <span className="text-sm font-bold text-slate-700">Email</span>
                 <input
                   id="email"
                   name="email"
@@ -78,19 +83,14 @@ export default function Login() {
                   autoComplete="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none relative block w-full px-4 py-3 border border-[#e6e6e6] placeholder-[#989898] text-black rounded-[8px] focus:outline-none focus:ring-2 focus:ring-[#00FFBF] focus:border-transparent font-['Inter:Regular',sans-serif] text-[14px]"
+                  onChange={(event) => setEmail(event.target.value)}
+                  className="mt-2 min-h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white"
                   placeholder="seu@email.com"
                 />
-              </div>
+              </label>
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block font-['Inter:Medium',sans-serif] text-[14px] text-black mb-2"
-                >
-                  Senha
-                </label>
+              <label className="block">
+                <span className="text-sm font-bold text-slate-700">Senha</span>
                 <input
                   id="password"
                   name="password"
@@ -98,136 +98,82 @@ export default function Login() {
                   autoComplete="current-password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none relative block w-full px-4 py-3 border border-[#e6e6e6] placeholder-[#989898] text-black rounded-[8px] focus:outline-none focus:ring-2 focus:ring-[#00FFBF] focus:border-transparent font-['Inter:Regular',sans-serif] text-[14px]"
-                  placeholder="••••••••"
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="mt-2 min-h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white"
+                  placeholder="Digite sua senha"
                 />
-              </div>
-            </div>
+              </label>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-[8px] px-4 py-3">
-                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-red-600">
+              {error && (
+                <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
                   {error}
                 </p>
-              </div>
-            )}
+              )}
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-[#00FFBF] focus:ring-[#00FFBF] border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block font-['Inter:Regular',sans-serif] text-[14px] text-[#6f6f6f]"
-                >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="size-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500"
+                  />
                   Lembrar de mim
                 </label>
-              </div>
 
-              <div>
-                <a
-                  href="#"
-                  className="font-['Inter:Medium',sans-serif] text-[14px] text-[#00FFBF] hover:text-[#00d9a8]"
-                >
+                <button type="button" className="text-sm font-bold text-emerald-700 transition hover:text-slate-950">
                   Esqueceu a senha?
-                </a>
+                </button>
               </div>
-            </div>
 
-            <div className="space-y-4">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent font-['Inter:Medium',sans-serif] text-[16px] rounded-[50px] text-white bg-[#00FFBF] hover:bg-[#00d9a8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00FFBF] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex min-h-12 w-full items-center justify-center rounded-md bg-emerald-500 px-5 text-sm font-bold uppercase tracking-[0.04em] text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isLoading ? "Entrando..." : "Entrar"}
               </button>
+            </form>
 
-              <div className="text-center">
-                <span className="font-['Inter:Regular',sans-serif] text-[14px] text-[#6f6f6f]">
-                  Não tem uma conta?{" "}
-                </span>
-                <Link
-                  to="/cadastrar"
-                  className="font-['Inter:Medium',sans-serif] text-[14px] text-[#00FFBF] hover:text-[#00d9a8]"
-                >
-                  Cadastre-se
-                </Link>
+            <div className="mt-8">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-white px-3 text-slate-500">Ou continue com</span>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 transition hover:bg-slate-50">
+                  <svg className="size-5" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                  </svg>
+                  Google
+                </button>
+
+                <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 transition hover:bg-slate-50">
+                  <svg className="size-5" fill="#1877F2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                  Facebook
+                </button>
               </div>
             </div>
-          </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#e6e6e6]" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white font-['Inter:Regular',sans-serif] text-[14px] text-[#6f6f6f]">
-                  Ou continue com
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button className="w-full inline-flex justify-center items-center gap-2 py-3 px-4 border border-[#e6e6e6] rounded-[8px] bg-white font-['Inter:Medium',sans-serif] text-[14px] text-black hover:bg-gray-50 transition-colors">
-                <svg className="size-[20px]" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                Google
-              </button>
-
-              <button className="w-full inline-flex justify-center items-center gap-2 py-3 px-4 border border-[#e6e6e6] rounded-[8px] bg-white font-['Inter:Medium',sans-serif] text-[14px] text-black hover:bg-gray-50 transition-colors">
-                <svg className="size-[20px]" fill="#1877F2" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-                Facebook
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Side - Image */}
-      <div className="hidden lg:block flex-1 relative">
-        <img
-          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&h=1200&fit=crop"
-          alt="Modern house"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#00FFBF]/20 to-transparent" />
-        <div className="absolute inset-0 flex items-center justify-center p-12">
-          <div className="max-w-md text-white">
-            <h3 className="font-['Poppins:Bold',sans-serif] text-[48px] leading-tight mb-4">
-              Encontre seu lar dos sonhos
-            </h3>
-            <p className="font-['Inter:Regular',sans-serif] text-[18px] leading-relaxed">
-              Acesse milhares de imóveis exclusivos em todo o Brasil e descubra
-              o lugar perfeito para você e sua família.
+            <p className="mt-8 text-center text-sm text-slate-500">
+              Nao tem uma conta?{" "}
+              <Link to="/cadastrar" className="font-bold text-emerald-700 transition hover:text-slate-950">
+                Cadastre-se
+              </Link>
             </p>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

@@ -1,145 +1,150 @@
-﻿import { useState, useEffect, useRef } from "react";
 import { Footer } from "../components/layout/Footer";
 import { Header } from "../components/layout/Header";
 import { PresentationAbout } from "../components/about/PresentationAbout";
-import {FAQ} from "../components/faq/FAQ";
+import { FAQ } from "../components/faq/FAQ";
+
 export function meta() {
-  
   return [
-    { title: "Sobre nós | Morada Prime" },
+    { title: "Sobre nos | Ninho Imoveis" },
     {
       name: "description",
-      content:
-        "Conheça a história, a atuação e o processo de atendimento da Morada Prime.",
+      content: "Conheca a historia, a atuacao e o processo de atendimento da Ninho Imoveis.",
     },
   ];
 }
 
-
+const processSteps = [
+  {
+    step: "Briefing",
+    desc: "Entendemos suas necessidades, preferencias e orcamento para encontrar o imovel ideal.",
+  },
+  {
+    step: "Selecao",
+    desc: "Filtramos as melhores opcoes do nosso portfolio alinhadas ao seu perfil.",
+  },
+  {
+    step: "Visita",
+    desc: "Agendamos e acompanhamos visitas presenciais ou virtuais aos imoveis selecionados.",
+  },
+  {
+    step: "Negociacao",
+    desc: "Conduzimos proposta, contraproposta e fechamento com clareza e seguranca.",
+  },
+];
 
 const diferenciais = [
   {
+    titulo: "Gestao de propriedades",
+    descricao: "Acompanhamento organizado para compra, venda, locacao e administracao de imoveis.",
     icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3zm0 10c-3.866 0-7-3.134-7-7h2a5 5 0 0010 0h2c0 3.866-3.134 7-7 7z" />
-      </svg>
+      <path
+        d="M4 19V9.5L12 4l8 5.5V19M8 19v-7h8v7"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
     ),
-    titulo: "Gestão de Propriedades",
-    descricao: "A nossa missão é proporcionar soluções inovadoras e eficazes para nossos clientes.",
   },
   {
+    titulo: "Atendimento consultivo",
+    descricao: "Ajudamos voce a comparar opcoes, entender valores e decidir com mais seguranca.",
     icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm9 3c0 4.418-3.582 8-8 8s-8-3.582-8-8c0-1.154.204-2.255.578-3.255m14.844 0A7.963 7.963 0 0021 11m-9 13a8 8 0 100-16 8 8 0 000 16z" />
-      </svg>
+      <path
+        d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm7 8a7 7 0 0 0-14 0"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
     ),
-    titulo: "Serviços de Hipoteca",
-    descricao: "Nosso foco é a satisfação do cliente, sempre buscando superar suas expectativas.",
   },
   {
+    titulo: "Processo claro",
+    descricao: "Cada etapa e conduzida com informacoes objetivas, prazos visiveis e documentacao alinhada.",
     icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m-6 8a9 9 0 110-18 9 9 0 010 18zm1-7h2m-2 4h4" />
-      </svg>
+      <path
+        d="M8 6h10M8 12h10M8 18h6M5 6h.01M5 12h.01M5 18h.01"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
     ),
-    titulo: "Serviços de Câmbio",
-    descricao: "Acreditamos na responsabilidade social e no compromisso com a comunidade.",
   },
   {
+    titulo: "Seguranca na escolha",
+    descricao: "Priorizamos imoveis bem apresentados, dados consistentes e suporte ate a assinatura.",
     icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5s-3 1.343-3 3 1.343 3 3 3z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 17h16M4 21h16" />
-      </svg>
+      <path
+        d="M12 3 5 6v5c0 4.5 2.9 8.4 7 10 4.1-1.6 7-5.5 7-10V6l-7-3Zm-3 9 2 2 4-4"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
     ),
-    titulo: "Pagamento Seguro",
-    descricao: "Valorizamos a inovação e a melhoria contínua em nossos serviços.",
   },
 ];
 
 export default function About() {
-  const [statsStarted, setStatsStarted] = useState(false);
-  const statsRef = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setStatsStarted(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.4 }
-    );
-    if (statsRef.current) observer.observe(statsRef.current);
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <Header />
 
-      {/* HERO */}
-      <section className="relative flex min-h-[600px] items-center justify-center overflow-hidden pt-24">
+      <section className="relative min-h-[680px] overflow-hidden bg-slate-900 pt-20 text-white sm:min-h-[760px] lg:min-h-[820px]">
         <div className="absolute inset-0">
-          {/* IMAGEM: /public/images/about-hero.jpg */}
           <img
-            src="/images/about-hero.jpg"
-            alt="Morada Prime"
-            className="h-full w-full object-cover"
+            src="/images/about.svg"
+            alt="Residencia moderna da Ninho Imoveis"
+            className="h-full w-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-slate-900/10 to-white" />
+          <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-white via-white/90 to-transparent" />
         </div>
-        <div className="relative mx-auto max-w-7xl px-6 pb-16 sm:px-8 lg:px-10 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-500">
-            Sobre nós
+
+        <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center px-6 pb-20 pt-16 text-center sm:px-8 sm:pt-20 lg:px-10 lg:pt-24">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-200">
+            Sobre nos
           </p>
-          <h1 className="mt-4 mx-auto max-w-2xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
-            Descubra um estilo de vida que une conforto e elegância.
+          <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+            Descubra um estilo de vida que une conforto e elegancia.
           </h1>
-          <p className="mt-5 mx-auto max-w-xl text-base leading-relaxed text-slate-600">
-            Há mais de uma década conectando pessoas aos imóveis que transformam
-            suas vidas. Conheça nossa história e o que nos move.
+          <p className="mt-6 max-w-2xl text-sm leading-7 text-white/85 sm:text-base">
+            Elevamos sua experiencia de vida com imoveis selecionados, atendimento proximo e uma jornada clara ate a chave.
           </p>
         </div>
       </section>
 
-      {/* SOBRE + TRAJETÓRIA */}
-      <PresentationAbout></PresentationAbout>
+      <PresentationAbout />
 
-      {/* PROCESSO */}
-      <section className="border-t border-slate-200 py-20">
+      <section className="border-t border-slate-200 py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
           <div className="max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-500">
               Processo
             </p>
             <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
-              Da busca até a chave, com etapas claras.
+              Da busca ate a chave, com etapas claras.
             </h2>
           </div>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 md:grid-cols-4">
-            {[
-              { step: "Briefing", desc: "Entendemos suas necessidades, preferências e orçamento para encontrar o imóvel ideal." },
-              { step: "Seleção", desc: "Filtramos as melhores opções do nosso portfólio alinhadas ao seu perfil." },
-              { step: "Visita", desc: "Agendamos e acompanhamos as visitas presenciais ou virtuais aos imóveis selecionados." },
-              { step: "Negociação", desc: "Conduzimos a proposta, contrapartida e fechamento com total segurança jurídica." },
-            ].map((item, index) => (
-              <div
+
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {processSteps.map((item, index) => (
+              <article
                 key={item.step}
-                className="group rounded-2xl border border-slate-200 bg-slate-50 p-6 transition hover:border-emerald-300/40 hover:bg-emerald-100"
+                className="rounded-lg border border-slate-200 bg-slate-50 p-5 transition hover:border-emerald-300/40 hover:bg-emerald-100 sm:p-6"
               >
                 <span className="text-xs font-bold text-emerald-500">0{index + 1}</span>
                 <h3 className="mt-4 text-lg font-bold text-slate-900">{item.step}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.desc}</p>
-              </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* DIFERENCIAIS */}
-      <section className="bg-[#0f172a] py-20 text-white">
+      <section className="bg-[#0f172a] py-16 text-white sm:py-20">
         <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
           <div className="grid gap-10 lg:grid-cols-[0.95fr_1fr] lg:items-start">
             <div className="max-w-md">
@@ -147,32 +152,34 @@ export default function About() {
                 Por que nos escolher
               </p>
               <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">
-                Vamos encontrar a melhor opção de venda para você.
+                Vamos encontrar a melhor opcao para voce.
               </h2>
               <p className="mt-6 text-sm leading-relaxed text-slate-300">
-                A empresa valoriza a transparência e a ética em todas as suas operações.
+                Trabalhamos com transparencia, curadoria de imoveis e suporte em cada etapa da decisao.
               </p>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="grid gap-5 sm:grid-cols-2">
               {diferenciais.map((item) => (
-                <div
+                <article
                   key={item.titulo}
-                  className="rounded-3xl border border-white/10 bg-white/5 p-6 transition hover:border-emerald-400/30 hover:bg-white/10"
+                  className="rounded-lg border border-white/10 bg-white/5 p-5 transition hover:border-emerald-400/30 hover:bg-white/10 sm:p-6"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400/10 text-emerald-400">
-                    {item.icon}
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-400/10 text-emerald-400">
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                      {item.icon}
+                    </svg>
                   </div>
                   <h3 className="mt-5 text-base font-semibold text-white">{item.titulo}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-300">{item.descricao}</p>
-                </div>
+                </article>
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      <FAQ></FAQ>
+      <FAQ />
       <Footer />
     </div>
   );

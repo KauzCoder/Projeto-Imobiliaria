@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 export default function Register() {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -10,30 +11,25 @@ export default function Register() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError("");
 
     if (password !== confirmPassword) {
-      setError("As senhas não coincidem");
+      setError("As senhas nao coincidem.");
       return;
     }
 
     if (password.length < 6) {
-      setError("A senha deve ter no mínimo 6 caracteres");
+      setError("A senha deve ter no minimo 6 caracteres.");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const success = await register(name, email, password, phone);
-      if (success) {
-        window.location.href = "/profile";
-      } else {
-        setError("Erro ao criar conta. Tente novamente.");
-      }
-    } catch (err) {
+      navigate("/entrar");
+    } catch {
       setError("Erro ao criar conta. Tente novamente.");
     } finally {
       setIsLoading(false);
@@ -41,206 +37,173 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      <div className="absolute left-4 top-4 z-50">
-        <Link
-          to="/entrar"
-          className="flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-black shadow-lg transition hover:shadow-xl"
-        >
-          <svg className="size-5" fill="none" viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M12 16L6 10L12 4" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Voltar
-        </Link>
-      </div>
+    <main className="min-h-screen bg-slate-950 text-white">
+      <div className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="relative flex min-h-[320px] overflow-hidden lg:min-h-screen">
+          <img
+            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=80"
+            alt="Interior moderno de uma casa"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/30 via-slate-950/25 to-slate-950/90 lg:bg-gradient-to-r lg:from-slate-950/25 lg:via-slate-950/25 lg:to-slate-950" />
 
+          <div className="relative z-10 flex w-full flex-col justify-between p-6 sm:p-8 lg:p-10">
+            <Link to="/entrar" className="inline-flex w-fit items-center gap-3 text-sm font-semibold text-white transition hover:text-emerald-300">
+              <span className="grid size-9 place-items-center rounded-full bg-white/12 backdrop-blur">
+                <svg className="size-5" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M12 16L6 10L12 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              Voltar para login
+            </Link>
 
-      {/* Left Side - Image */}
-      <div className="hidden lg:block flex-1 relative">
-        <div className="absolute inset-0 bg-gradient-to-l from-[#00FFBF]/20 to-transparent" />
-        <div className="absolute inset-0 flex items-center justify-center p-12">
-          <div className="max-w-md text-white">
-            <h3 className="font-['Poppins:Bold',sans-serif] text-[48px] leading-tight mb-4">
-              Comece sua jornada
-            </h3>
-            <p className="font-['Inter:Regular',sans-serif] text-[18px] leading-relaxed">
-              Crie sua conta e tenha acesso a recursos exclusivos, salve seus
-              imóveis favoritos e receba recomendações personalizadas.
-            </p>
+            <div className="max-w-xl pt-20 lg:pb-10">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-200">
+                Nova conta
+              </p>
+              <h1 className="mt-5 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+                Comece sua jornada com a Ninho.
+              </h1>
+              <p className="mt-5 max-w-md text-sm leading-7 text-white/80 sm:text-base">
+                Crie sua conta para salvar imoveis, organizar visitas e acompanhar oportunidades com mais facilidade.
+              </p>
+            </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Right Side - Form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12 bg-white">
-        <div className="max-w-md w-full space-y-8">
-          <div>
-            <h2 className="text-center font-['Poppins:Bold',sans-serif] text-[36px] text-black">
-              Criar conta
-            </h2>
-            <p className="mt-2 text-center font-['Inter:Regular',sans-serif] text-[16px] text-[#6f6f6f]">
-              Preencha os dados para começar
-            </p>
-          </div>
+        <section className="flex items-center justify-center bg-white px-6 py-10 text-slate-950 sm:px-8 lg:px-12">
+          <div className="w-full max-w-md">
+            <div className="mb-8">
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-600">Cadastro</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                Criar conta
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-500">
+                Preencha seus dados para acessar os recursos da plataforma.
+              </p>
+            </div>
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block font-['Inter:Medium',sans-serif] text-[14px] text-black mb-2"
-                >
-                  Nome completo
-                </label>
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              <label className="block">
+                <span className="text-sm font-bold text-slate-700">Nome completo</span>
                 <input
                   id="name"
                   name="name"
                   type="text"
                   required
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="appearance-none relative block w-full px-4 py-3 border border-[#e6e6e6] placeholder-[#989898] text-black rounded-[8px] focus:outline-none focus:ring-2 focus:ring-[#00FFBF] focus:border-transparent font-['Inter:Regular',sans-serif] text-[14px]"
-                  placeholder="João Silva"
+                  onChange={(event) => setName(event.target.value)}
+                  className="mt-2 min-h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white"
+                  placeholder="Joao Silva"
                 />
-              </div>
+              </label>
 
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block font-['Inter:Medium',sans-serif] text-[14px] text-black mb-2"
-                >
-                  Email
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-bold text-slate-700">Email</span>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className="mt-2 min-h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white"
+                    placeholder="seu@email.com"
+                  />
                 </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none relative block w-full px-4 py-3 border border-[#e6e6e6] placeholder-[#989898] text-black rounded-[8px] focus:outline-none focus:ring-2 focus:ring-[#00FFBF] focus:border-transparent font-['Inter:Regular',sans-serif] text-[14px]"
-                  placeholder="seu@email.com"
-                />
-              </div>
 
-              <div>
-                <label
-                  htmlFor="phone"
-                  className="block font-['Inter:Medium',sans-serif] text-[14px] text-black mb-2"
-                >
-                  Telefone
+                <label className="block">
+                  <span className="text-sm font-bold text-slate-700">Telefone</span>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(event) => setPhone(event.target.value)}
+                    className="mt-2 min-h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white"
+                    placeholder="(91) 98765-4321"
+                  />
                 </label>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="appearance-none relative block w-full px-4 py-3 border border-[#e6e6e6] placeholder-[#989898] text-black rounded-[8px] focus:outline-none focus:ring-2 focus:ring-[#00FFBF] focus:border-transparent font-['Inter:Regular',sans-serif] text-[14px]"
-                  placeholder="(91) 98765-4321"
-                />
               </div>
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block font-['Inter:Medium',sans-serif] text-[14px] text-black mb-2"
-                >
-                  Senha
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-bold text-slate-700">Senha</span>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="mt-2 min-h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white"
+                    placeholder="Minimo 6 caracteres"
+                  />
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none relative block w-full px-4 py-3 border border-[#e6e6e6] placeholder-[#989898] text-black rounded-[8px] focus:outline-none focus:ring-2 focus:ring-[#00FFBF] focus:border-transparent font-['Inter:Regular',sans-serif] text-[14px]"
-                  placeholder="Mínimo 6 caracteres"
-                />
-              </div>
 
-              <div>
-                <label
-                  htmlFor="confirm-password"
-                  className="block font-['Inter:Medium',sans-serif] text-[14px] text-black mb-2"
-                >
-                  Confirmar senha
+                <label className="block">
+                  <span className="text-sm font-bold text-slate-700">Confirmar senha</span>
+                  <input
+                    id="confirm-password"
+                    name="confirm-password"
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    className="mt-2 min-h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white"
+                    placeholder="Digite novamente"
+                  />
                 </label>
-                <input
-                  id="confirm-password"
-                  name="confirm-password"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="appearance-none relative block w-full px-4 py-3 border border-[#e6e6e6] placeholder-[#989898] text-black rounded-[8px] focus:outline-none focus:ring-2 focus:ring-[#00FFBF] focus:border-transparent font-['Inter:Regular',sans-serif] text-[14px]"
-                  placeholder="Digite a senha novamente"
-                />
               </div>
-            </div>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-[8px] px-4 py-3">
-                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-red-600">
+              {error && (
+                <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
                   {error}
                 </p>
-              </div>
-            )}
+              )}
 
-            <div className="flex items-start">
-              <div className="flex items-center h-5">
+              <label className="flex items-start gap-3 text-sm leading-6 text-slate-600">
                 <input
                   id="terms"
                   name="terms"
                   type="checkbox"
                   required
-                  className="h-4 w-4 text-[#00FFBF] focus:ring-[#00FFBF] border-gray-300 rounded"
+                  className="mt-1 size-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500"
                 />
-              </div>
-              <div className="ml-2">
-                <label
-                  htmlFor="terms"
-                  className="font-['Inter:Regular',sans-serif] text-[14px] text-[#6f6f6f]"
-                >
+                <span>
                   Concordo com os{" "}
-                  <a href="#" className="text-[#00FFBF] hover:text-[#00d9a8]">
+                  <button type="button" className="font-bold text-emerald-700 transition hover:text-slate-950">
                     Termos de Uso
-                  </a>{" "}
-                  e{" "}
-                  <a href="#" className="text-[#00FFBF] hover:text-[#00d9a8]">
-                    Política de Privacidade
-                  </a>
-                </label>
-              </div>
-            </div>
+                  </button>{" "}
+                  e a{" "}
+                  <button type="button" className="font-bold text-emerald-700 transition hover:text-slate-950">
+                    Politica de Privacidade
+                  </button>
+                  .
+                </span>
+              </label>
 
-            <div className="space-y-4">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent font-['Inter:Medium',sans-serif] text-[16px] rounded-[50px] text-white bg-[#00FFBF] hover:bg-[#00d9a8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00FFBF] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex min-h-12 w-full items-center justify-center rounded-md bg-emerald-500 px-5 text-sm font-bold uppercase tracking-[0.04em] text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isLoading ? "Criando conta..." : "Criar conta"}
               </button>
+            </form>
 
-              <div className="text-center">
-                <span className="font-['Inter:Regular',sans-serif] text-[14px] text-[#6f6f6f]">
-                  Já tem uma conta?{" "}
-                </span>
-                <Link
-                  to="/entrar"
-                  className="font-['Inter:Medium',sans-serif] text-[14px] text-[#00FFBF] hover:text-[#00d9a8]"
-                >
-                  Fazer login
-                </Link>
-              </div>
-            </div>
-          </form>
-        </div>
+            <p className="mt-8 text-center text-sm text-slate-500">
+              Ja tem uma conta?{" "}
+              <Link to="/entrar" className="font-bold text-emerald-700 transition hover:text-slate-950">
+                Fazer login
+              </Link>
+            </p>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { FilterSidebar } from "../components/properties/FilterSidebar";
 import { PropertyCatalog } from "../components/properties/PropertyCatalog";
 import { PropertyDetailPanel } from "../components/properties/PropertyDetailPanel";
@@ -13,6 +13,8 @@ const initialFilters = {
   city: "",
   region: "",
   neighborhood: "",
+  type: "",
+  status: "",
   minPrice: "",
   maxPrice: "",
   bedrooms: 0,
@@ -34,8 +36,19 @@ export function meta() {
 }
 
 export default function SearchMap() {
+  const [searchParams] = useSearchParams();
   const [properties, setProperties] = useState(fallbackProperties);
-  const [filters, setFilters] = useState(initialFilters);
+  const [filters, setFilters] = useState(() => ({
+    ...initialFilters,
+    country: searchParams.get("country") ?? "",
+    city: searchParams.get("city") ?? "",
+    region: searchParams.get("region") ?? "",
+    neighborhood: searchParams.get("neighborhood") ?? "",
+    type: searchParams.get("type") ?? "",
+    status: searchParams.get("status") ?? "",
+    minPrice: searchParams.get("minPrice") ?? "",
+    maxPrice: searchParams.get("maxPrice") ?? "",
+  }));
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [mapZoom, setMapZoom] = useState(propertyMapZoom.initial);
@@ -46,11 +59,9 @@ export default function SearchMap() {
     let active = true;
 
     setIsLoading(true);
-    console.log("SearchMap: useEffect inicial rodando");
 
     getProperties()
       .then((items) => {
-        console.log("SearchMap: getProperties retornou:", items);
         if (!active) return;
         if (items.length > 0) setProperties(items);
       })
@@ -60,7 +71,6 @@ export default function SearchMap() {
       .finally(() => {
         if (active) {
           setIsLoading(false);
-          console.log("SearchMap: carregamento completo");
         }
       });
 
@@ -108,6 +118,8 @@ export default function SearchMap() {
       if (filters.city && property.city !== filters.city) return false;
       if (filters.region && property.region !== filters.region) return false;
       if (filters.neighborhood && property.neighborhood !== filters.neighborhood) return false;
+      if (filters.type && property.type !== filters.type) return false;
+      if (filters.status && property.status !== filters.status) return false;
       if (minPrice > 0 && property.price < minPrice) return false;
       if (maxPrice > 0 && property.price > maxPrice) return false;
       if (filters.bedrooms > 0 && property.beds < filters.bedrooms) return false;

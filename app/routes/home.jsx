@@ -1,9 +1,16 @@
-import { Link } from "react-router";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { Footer } from "../components/layout/Footer";
 import { Header } from "../components/layout/Header";
 import { FAQ } from "../components/faq/FAQ";
 import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
 import { PropertyCard } from "../components/properties/PropertyCard";
+import { getProperties } from "../services/propertyService";
+import { normalizeProperty } from "../utils/propertyUtils";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Scrollbar } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/scrollbar";
 import { fallbackProperties } from "../data/properties";
 
 const partnerImages = [
@@ -15,32 +22,46 @@ const partnerImages = [
   { src: "/parceiros/parceiro-6.png", alt: "Parceiro 6" },
 ];
 
-const cityCards = [
-  {
-    city: "Xique-Xique",
-    count: "Propriedades - 24",
-    image:
-      "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    city: "Belford Roxo",
-    count: "Propriedades - 11",
-    image:
-      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    city: "Belem",
-    count: "Propriedades - 18",
-    image:
-      "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    city: "Arroio dos Ratos",
-    count: "Propriedades - 9",
-    image:
-      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=900&q=80",
-  },
+const priceRanges = [
+  { label: "Ate R$ 300 mil", minPrice: "", maxPrice: "300000" },
+  { label: "R$ 300 mil - R$ 700 mil", minPrice: "300000", maxPrice: "700000" },
+  { label: "R$ 700 mil - R$ 1,5 mi", minPrice: "700000", maxPrice: "1500000" },
+  { label: "Acima de R$ 1,5 mi", minPrice: "1500000", maxPrice: "" },
 ];
+
+function uniqueValues(items, key) {
+  return [...new Set(items.map((item) => item[key]).filter(Boolean))].sort();
+}
+
+function isInsideRange(property, range) {
+  const minPrice = Number(range.minPrice || 0);
+  const maxPrice = Number(range.maxPrice || 0);
+
+  if (minPrice > 0 && property.price < minPrice) return false;
+  if (maxPrice > 0 && property.price > maxPrice) return false;
+  return true;
+}
+
+function ShortcutSelect({ label, value, onChange, options, placeholder, disabled = false }) {
+  return (
+    <label className="block min-w-0">
+      <span className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={disabled}
+        className="mt-2 min-h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+      >
+        <option value="">{placeholder}</option>
+        {options.map((option) => (
+          <option key={option.value ?? option} value={option.value ?? option}>
+            {option.label ?? option}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
 
 export function meta() {
   return [
@@ -53,16 +74,166 @@ export function meta() {
 }
 
 export default function Home() {
-  const featuredProperties = fallbackProperties.filter((property) => property.featured);
+  const navigate = useNavigate();
+  const [properties, setProperties] = useState(fallbackProperties);
+  const [searchFilters, setSearchFilters] = useState({
+    status: "Venda",
+    country: "",
+    city: "",
+    type: "",
+    priceRange: "",
+  });
+
+  useEffect(() => {
+    let active = true;
+
+    getProperties().then((propertiesData) => {
+      if (active && propertiesData.length > 0) {
+        setProperties(propertiesData);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const featuredProperties = useMemo(() => {
+    const featured = properties.filter((property) => property.featured);
+    return (featured.length > 0 ? featured : properties).slice(0, 4);
+  }, [properties]);
+
+  const normalizedProperties = useMemo(
+    () => properties.map((property, index) => normalizeProperty(property, index)),
+    [properties],
+  );
+
+  const searchBaseProperties = useMemo(
+    () => normalizedProperties.filter((property) => !searchFilters.status || property.status === searchFilters.status),
+    [normalizedProperties, searchFilters.status],
+  );
+
+  const searchOptions = useMemo(() => {
+    const countryProperties = searchBaseProperties;
+    const cityProperties = searchFilters.country
+      ? countryProperties.filter((property) => property.country === searchFilters.country)
+      : countryProperties;
+    const typeProperties = searchFilters.city
+      ? cityProperties.filter((property) => property.city === searchFilters.city)
+      : cityProperties;
+    const priceProperties = searchFilters.type
+      ? typeProperties.filter((property) => property.type === searchFilters.type)
+      : typeProperties;
+
+    return {
+      countries: uniqueValues(countryProperties, "country"),
+      cities: uniqueValues(cityProperties, "city"),
+      types: uniqueValues(typeProperties, "type"),
+      priceRanges: priceRanges.filter((range) => priceProperties.some((property) => isInsideRange(property, range))),
+    };
+  }, [searchBaseProperties, searchFilters.country, searchFilters.city, searchFilters.type]);
+
+  const matchingSearchCount = useMemo(() => {
+    const selectedRange = priceRanges.find((range) => range.label === searchFilters.priceRange);
+
+    return normalizedProperties.filter((property) => {
+      if (searchFilters.status && property.status !== searchFilters.status) return false;
+      if (searchFilters.country && property.country !== searchFilters.country) return false;
+      if (searchFilters.city && property.city !== searchFilters.city) return false;
+      if (searchFilters.type && property.type !== searchFilters.type) return false;
+      if (selectedRange && !isInsideRange(property, selectedRange)) return false;
+      return true;
+    }).length;
+  }, [normalizedProperties, searchFilters]);
+
+  const cityCards = useMemo(() => {
+    const cities = new Map();
+
+    normalizedProperties.forEach((property) => {
+      if (!property.city) return;
+
+      const current = cities.get(property.city) ?? {
+        city: property.city,
+        count: 0,
+        image: property.image,
+      };
+
+      cities.set(property.city, {
+        ...current,
+        count: current.count + 1,
+        image: current.image || property.image,
+      });
+    });
+
+    return [...cities.values()].sort((first, second) => second.count - first.count).slice(0, 4);
+  }, [normalizedProperties]);
 
   function handleSearch(event) {
     event.preventDefault();
+    const selectedRange = priceRanges.find((range) => range.label === searchFilters.priceRange);
+    const params = new URLSearchParams();
+
+    if (searchFilters.status) params.set("status", searchFilters.status);
+    if (searchFilters.country) params.set("country", searchFilters.country);
+    if (searchFilters.city) params.set("city", searchFilters.city);
+    if (searchFilters.type) params.set("type", searchFilters.type);
+    if (selectedRange?.minPrice) params.set("minPrice", selectedRange.minPrice);
+    if (selectedRange?.maxPrice) params.set("maxPrice", selectedRange.maxPrice);
+
+    navigate(`/imoveis?${params.toString()}`);
+  }
+
+  function updateSearchFilter(field, value) {
+    setSearchFilters((current) => {
+      const next = { ...current, [field]: value };
+
+      if (field === "status") {
+        next.country = "";
+        next.city = "";
+        next.type = "";
+        next.priceRange = "";
+      }
+
+      if (field === "country") {
+        next.city = "";
+        next.type = "";
+        next.priceRange = "";
+      }
+
+      if (field === "city") {
+        next.type = "";
+        next.priceRange = "";
+      }
+
+      if (field === "type") {
+        next.priceRange = "";
+      }
+
+      return next;
+    });
+  }
+
+  function clearSearchFilters() {
+    setSearchFilters({
+      status: "Venda",
+      country: "",
+      city: "",
+      type: "",
+      priceRange: "",
+    });
   }
 
   return (
     <div className="min-h-screen bg-stone-50">
       <Header />
       <main>
+        <style>{`
+          @media (min-width: 1024px) {
+            .home-swiper .swiper-scrollbar {
+              display: none;
+            }
+          }
+        `}</style>
         <section className="relative overflow-hidden bg-slate-950 text-white">
           <div className="absolute inset-0">
             <img
@@ -86,65 +257,69 @@ export default function Home() {
               </p>
             </div>
 
-            <form
-              onSubmit={handleSearch}
-              className="mx-auto w-full max-w-6xl overflow-hidden rounded-md bg-white text-slate-950 shadow-lg"
-            >
-              <div className="flex">
-                <button
-                  type="button"
-                  className="min-h-11 w-36 bg-white px-5 text-sm font-semibold uppercase tracking-[0.08em] text-slate-700"
-                >
-                  $ Compras
-                </button>
-                <button
-                  type="button"
-                  className="min-h-11 flex-1 bg-[#22242a] px-5 text-sm font-semibold uppercase tracking-[0.08em] text-white sm:w-72 sm:flex-none"
-                >
-                  Caracteristicas
-                </button>
-              </div>
 
-              <div className="grid gap-4 p-4 md:grid-cols-[1fr_1fr_1fr_1.15fr_auto] md:items-end">
-                <label className="block">
-                  <span className="text-sm font-medium text-slate-500">Pais</span>
-                  <select className="mt-1 min-h-9 w-full border border-slate-300 bg-slate-50 px-2 text-sm text-slate-700 outline-none focus:border-emerald-600">
-                    <option>Brasil</option>
-                  </select>
-                </label>
+            <form onSubmit={handleSearch} className="mx-auto w-full max-w-6xl rounded-md bg-white p-3 text-slate-950 shadow-2xl sm:p-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+                <div className="lg:w-44">
+                  <span className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Operacao</span>
+                  <div className="mt-2 grid grid-cols-2 rounded-md bg-slate-100 p-1">
+                    {["Venda", "Aluguel"].map((status) => (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => updateSearchFilter("status", status)}
+                        className={`min-h-10 rounded px-3 text-sm font-bold transition ${
+                          searchFilters.status === status
+                            ? "bg-slate-950 text-white shadow-sm"
+                            : "text-slate-600 hover:text-slate-950"
+                        }`}
+                      >
+                        {status === "Venda" ? "Comprar" : "Alugar"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                <label className="block">
-                  <span className="text-sm font-medium text-slate-500">Cidade</span>
-                  <select className="mt-1 min-h-9 w-full border border-slate-300 bg-slate-50 px-2 text-sm text-slate-700 outline-none focus:border-emerald-600">
-                    <option>Belem</option>
-                    <option>Sao Paulo</option>
-                    <option>Rio de Janeiro</option>
-                  </select>
-                </label>
+                <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <ShortcutSelect
+                    label="Pais"
+                    value={searchFilters.country}
+                    onChange={(value) => updateSearchFilter("country", value)}
+                    options={searchOptions.countries}
+                    placeholder="Todos"
+                    disabled={searchOptions.countries.length === 0}
+                  />
+                  <ShortcutSelect
+                    label="Cidade"
+                    value={searchFilters.city}
+                    onChange={(value) => updateSearchFilter("city", value)}
+                    options={searchOptions.cities}
+                    placeholder="Todas"
+                    disabled={searchOptions.cities.length === 0}
+                  />
+                  <ShortcutSelect
+                    label="Tipo"
+                    value={searchFilters.type}
+                    onChange={(value) => updateSearchFilter("type", value)}
+                    options={searchOptions.types}
+                    placeholder="Todos"
+                    disabled={searchOptions.types.length === 0}
+                  />
+                  <ShortcutSelect
+                    label="Preco"
+                    value={searchFilters.priceRange}
+                    onChange={(value) => updateSearchFilter("priceRange", value)}
+                    options={searchOptions.priceRanges}
+                    placeholder="Qualquer preco"
+                    disabled={searchOptions.priceRanges.length === 0}
+                  />
+                </div>
 
-                <label className="block">
-                  <span className="text-sm font-medium text-slate-500">Tipos de residencias</span>
-                  <select className="mt-1 min-h-9 w-full border border-slate-300 bg-slate-50 px-2 text-sm text-slate-700 outline-none focus:border-emerald-600">
-                    <option>Casa</option>
-                    <option>Apartamento</option>
-                    <option>Cobertura</option>
-                    <option>Comercial</option>
-                  </select>
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-medium text-slate-500">Precos</span>
-                  <select className="mt-1 min-h-9 w-full border border-slate-300 bg-slate-50 px-2 text-sm text-slate-700 outline-none focus:border-emerald-600">
-                    <option>R$ 3.000,00... - R$ 5.000,00...</option>
-                    <option>R$ 5.000,00... - R$ 10.000,00...</option>
-                    <option>Acima de R$ 10.000,00...</option>
-                  </select>
-                </label>
-
-                <button
-                  type="submit"
-                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md bg-emerald-400 px-6 text-sm font-semibold uppercase tracking-[0.04em] text-white transition hover:bg-emerald-500"
-                >
+                <div className="flex flex-col gap-2 lg:w-44">
+                  <button
+                    type="submit"
+                    className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md bg-emerald-500 px-6 text-sm font-bold uppercase tracking-[0.04em] text-white transition hover:bg-emerald-600"
+                  >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                     <path
                       d="M10.8 18.1C14.8 18.1 18.1 14.8 18.1 10.8C18.1 6.8 14.8 3.5 10.8 3.5C6.8 3.5 3.5 6.8 3.5 10.8C3.5 14.8 6.8 18.1 10.8 18.1Z"
@@ -162,7 +337,23 @@ export default function Home() {
                     />
                   </svg>
                   Pesquisa
-                </button>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearSearchFilters}
+                    className="min-h-9 rounded-md text-xs font-bold uppercase tracking-[0.06em] text-slate-500 transition hover:bg-slate-100 hover:text-slate-950"
+                  >
+                    Limpar filtros
+                  </button>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs font-semibold text-slate-500">
+                <span>
+                  {matchingSearchCount} {matchingSearchCount === 1 ? "imovel disponivel" : "imoveis disponiveis"}
+                </span>
+                <Link to="/imoveis" className="text-emerald-700 transition hover:text-slate-950">
+                  Abrir mapa completo
+                </Link>
               </div>
             </form>
           </div>
@@ -174,7 +365,7 @@ export default function Home() {
               Parceiros
             </p>
 
-            <div className="grid grid-cols-2 place-items-center gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="place-items-center grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
               {partnerImages.map((partner) => (
                 <img
                   key={partner.src}
@@ -217,26 +408,44 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {cityCards.map((city) => (
-                <Link
-                  key={city.city}
-                  to="/imoveis"
-                  className="group relative min-h-[500px] overflow-hidden rounded-md bg-slate-900 shadow-sm"
-                >
-                  <img
-                    src={city.image}
-                    alt={`Imoveis em ${city.city}`}
-                    className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/20 to-slate-950/55" />
-                  <div className="relative z-10 p-5 text-white">
-                    <h3 className="text-base font-semibold">{city.city}</h3>
-                    <p className="mt-1 text-xs text-white/75">{city.count}</p>
-                  </div>
-                </Link>
-              ))}
+            <div className="mt-8">
+              <Swiper
+                scrollbar={{ hide: true }}
+                modules={[Scrollbar]}
+                slidesPerView={1}
+                spaceBetween={20}
+                breakpoints={{
+                  640: { slidesPerView: 2 },
+                  1024: { slidesPerView: 4 },
+                  1800: { slidesPerView: 4, spaceBetween: 30 },
+                }}
+                className="mySwiper"
+              >
+                {cityCards.map((city) => (
+                  <SwiperSlide key={city.city}>
+                    <Link
+                      to={`/imoveis?city=${encodeURIComponent(city.city)}`}
+                      className="group relative min-h-[800px] overflow-hidden rounded-md bg-slate-900 shadow-sm"
+                    >
+                      <div className="transition duration-300 group-hover:scale-105">
+                        <img
+                          src={city.image}
+                          alt={`Imoveis em ${city.city}`}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/20 to-slate-950/55" />
+                        <div className="min-h-[500px] relative z-10 p-5 text-white">
+                          <h3 className="text-base font-semibold">{city.city}</h3>
+                          <p className="mt-1 text-xs text-white/75">
+                            {city.count} {city.count === 1 ? "propriedade" : "propriedades"}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
             </div>
           </div>
         </section>
@@ -257,7 +466,29 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="mt-8 grid w-full gap-5 md:grid-cols-4">
+            <div className="mt-8 overflow-hidden lg:hidden">
+              <Swiper
+                slidesPerView={1}
+                spaceBetween={20}
+                scrollbar={{ draggable: true }}
+                modules={[Scrollbar]}
+                className="mySwiper home-swiper"
+                breakpoints={{
+                  640: { slidesPerView: 1.1, spaceBetween: 20 },
+                  768: { slidesPerView: 1.3, spaceBetween: 24 },
+                }}
+              >
+                {featuredProperties.map((property) => (
+                  <SwiperSlide key={property.id} className="w-full max-w-full">
+                    <div className="min-w-0">
+                      <PropertyCard property={property} />
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+
+            <div className="mt-8 hidden grid-cols-1 gap-5 lg:grid lg:grid-cols-4">
               {featuredProperties.map((property) => (
                 <PropertyCard key={property.id} property={property} />
               ))}
