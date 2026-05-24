@@ -1,6 +1,6 @@
 # Projeto Imobiliaria
 
-Site imobiliario em React, Node.js, Express, MongoDB e Tailwind CSS, organizado com backend em arquitetura MVC e JavaScript puro.
+Site imobiliario em React, Node.js, Express, PostgreSQL/Neon e Tailwind CSS, organizado com backend em arquitetura MVC e JavaScript puro.
 
 ## Estrutura
 
@@ -11,17 +11,17 @@ app/
   routes/            # Paginas Home, Sobre nos e Imoveis
   services/          # Comunicacao com a API
 server/
-  config/            # Conexao com MongoDB
+  config/            # Conexao e schema do PostgreSQL
   controllers/       # Regras das requisicoes
   data/              # Dados de seed
-  models/            # Models do Mongoose
+  models/            # Repositorios PostgreSQL
   routes/            # Rotas Express
 ```
 
 ## Requisitos
 
 - Node.js
-- MongoDB local ou uma string do MongoDB Atlas
+- PostgreSQL online pelo Neon
 
 ## Configuracao
 
@@ -35,10 +35,12 @@ Variaveis principais:
 
 ```env
 PORT=4000
-MONGODB_URI=mongodb://127.0.0.1:27017/projeto-imobiliaria
+DATABASE_URL=postgresql://usuario:senha@host/neondb?sslmode=require
 CLIENT_URL=http://localhost:5173
 VITE_API_URL=http://localhost:4000/api
 ```
+
+Cole em `DATABASE_URL` a connection string do Neon. No painel do Neon, ela normalmente aparece em **Connect** como uma URL PostgreSQL com `sslmode=require`.
 
 ## Instalar dependencias
 
@@ -64,7 +66,7 @@ Para desenvolver, rode o frontend e a API em dois terminais.
 
 ## Popular o banco
 
-Com o MongoDB rodando e `.env` configurado:
+Para cadastrar os imoveis iniciais no banco configurado:
 
 ```bash
 npm run seed

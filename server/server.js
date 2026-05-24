@@ -13,7 +13,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 4000;
-const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+const clientUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/$/, "");
 
 app.use(cors({ origin: clientUrl }));
 app.use(express.json());
@@ -48,6 +48,6 @@ connectDatabase()
     });
   })
   .catch((error) => {
-    console.error("Falha ao conectar no MongoDB:", error.message);
+    console.error("Falha ao conectar no PostgreSQL:", error.message);
     process.exit(1);
   });

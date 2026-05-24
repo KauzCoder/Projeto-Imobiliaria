@@ -11,10 +11,10 @@ const authModels = {
 
 async function findAccountByEmail(email) {
   for (const Model of Object.values(authModels)) {
-    const account = await Model.findOne({ email }).select("+passwordHash");
+    const account = await Model.findByEmail(email);
 
     if (account) {
-      return account;
+      return { account, Model };
     }
   }
 
@@ -53,7 +53,8 @@ export async function login(req, res, next) {
         .json({ message: "Email e senha sao obrigatorios." });
     }
 
-    const account = await findAccountByEmail(email);
+    const result = await findAccountByEmail(email);
+    const account = result?.account;
 
     if (!account || !verifyPassword(password, account.passwordHash)) {
       return res.status(401).json({ message: "Credenciais invalidas." });
@@ -63,10 +64,9 @@ export async function login(req, res, next) {
       return res.status(403).json({ message: "Conta desativada." });
     }
 
-    account.lastLoginAt = new Date();
-    await account.save();
+    await result.Model.updateLastLogin(account.id);
 
-    const safeAccount = account.toObject();
+    const safeAccount = { ...account };
     delete safeAccount.passwordHash;
 
     const token = generateToken(account);

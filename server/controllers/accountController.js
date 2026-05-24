@@ -24,7 +24,7 @@ export async function listAccounts(req, res, next) {
       return res.status(404).json({ message: "Tipo de conta nao encontrado." });
     }
 
-    const accounts = await Model.find().sort({ createdAt: -1 });
+    const accounts = await Model.find();
     res.json(accounts);
   } catch (error) {
     next(error);
@@ -74,10 +74,7 @@ export async function updateAccount(req, res, next) {
       return res.status(404).json({ message: "Tipo de conta nao encontrado." });
     }
 
-    const account = await Model.findByIdAndUpdate(req.params.id, buildAccountPayload(req.body), {
-      new: true,
-      runValidators: true,
-    });
+    const account = await Model.findByIdAndUpdate(req.params.id, buildAccountPayload(req.body));
 
     if (!account) {
       return res.status(404).json({ message: "Conta nao encontrada." });

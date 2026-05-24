@@ -43,7 +43,7 @@ export async function listProperties(req, res, next) {
       filters.area = { ...filters.area, $lte: Number(maxArea) };
     }
 
-    const properties = await Property.find(filters).sort({ featured: -1, createdAt: -1 });
+    const properties = await Property.find(filters);
     res.json(properties);
   } catch (error) {
     next(error);
@@ -75,10 +75,7 @@ export async function createProperty(req, res, next) {
 
 export async function updateProperty(req, res, next) {
   try {
-    const property = await Property.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const property = await Property.findByIdAndUpdate(req.params.id, req.body);
 
     if (!property) {
       return res.status(404).json({ message: "Imovel nao encontrado." });

@@ -10,7 +10,7 @@ export async function listBrokers(req, res, next) {
     if (verified) filters.verified = verified === "true";
     if (specialty) filters.specialties = specialty;
 
-    const brokers = await Broker.find(filters).sort({ verified: -1, createdAt: -1 });
+    const brokers = await Broker.find(filters);
     res.json(brokers);
   } catch (error) {
     next(error);
@@ -42,10 +42,7 @@ export async function createBroker(req, res, next) {
 
 export async function updateBroker(req, res, next) {
   try {
-    const broker = await Broker.findByIdAndUpdate(req.params.id, buildAccountPayload(req.body), {
-      new: true,
-      runValidators: true,
-    });
+    const broker = await Broker.findByIdAndUpdate(req.params.id, buildAccountPayload(req.body));
 
     if (!broker) {
       return res.status(404).json({ message: "Corretor nao encontrado." });
@@ -79,7 +76,7 @@ export async function listBrokerProperties(req, res, next) {
       return res.status(404).json({ message: "Corretor nao encontrado." });
     }
 
-    const properties = await Property.find({ broker: req.params.id }).sort({ createdAt: -1 });
+    const properties = await Property.find({ broker: req.params.id });
     res.json(properties);
   } catch (error) {
     next(error);
