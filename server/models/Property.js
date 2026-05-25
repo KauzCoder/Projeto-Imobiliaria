@@ -9,6 +9,7 @@ export const Property = {
     const where = buildWhere(filters);
     const rows = await prisma.property.findMany({
       where,
+      include: { broker: true },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
     });
 
@@ -16,13 +17,19 @@ export const Property = {
   },
 
   async findById(id) {
-    const row = await prisma.property.findUnique({ where: { id: Number(id) } });
+    const row = await prisma.property.findUnique({
+      where: { id: Number(id) },
+      include: { broker: true },
+    });
     return row ? mapPropertyRow(row) : null;
   },
 
   async create(data) {
     const payload = normalizePropertyPayload(data, { partial: false });
-    const row = await prisma.property.create({ data: payload });
+    const row = await prisma.property.create({
+      data: payload,
+      include: { broker: true },
+    });
     return mapPropertyRow(row);
   },
 
@@ -37,6 +44,7 @@ export const Property = {
       const row = await prisma.property.update({
         where: { id: Number(id) },
         data: payload,
+        include: { broker: true },
       });
       return mapPropertyRow(row);
     } catch (error) {
@@ -47,7 +55,10 @@ export const Property = {
 
   async findByIdAndDelete(id) {
     try {
-      const row = await prisma.property.delete({ where: { id: Number(id) } });
+      const row = await prisma.property.delete({
+        where: { id: Number(id) },
+        include: { broker: true },
+      });
       return mapPropertyRow(row);
     } catch (error) {
       if (error.code === "P2025") return null;
@@ -261,7 +272,8 @@ function mapPropertyRow(row) {
     area: Number(row.area),
     parkingSpaces: row.parkingSpaces,
     imageUrl: row.imageUrl,
-    broker: row.brokerId,
+    broker: mapBrokerSummary(row.broker),
+    brokerId: row.brokerId,
     owner: row.ownerId,
     createdBy:
       row.createdById || row.createdByModel
@@ -271,6 +283,31 @@ function mapPropertyRow(row) {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
+}
+
+function mapBrokerSummary(broker) {
+  if (!broker) return null;
+
+  return {
+    id: broker.id,
+    name: broker.name,
+    email: broker.email,
+    phone: broker.phone,
+    creci: broker.creci,
+    bio: broker.bio,
+    photo: brokerPhotoFor(broker.id),
+  };
+}
+
+function brokerPhotoFor(id) {
+  const photos = [
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=200&q=80",
+  ];
+
+  return photos[Math.abs(Number(id) || 0) % photos.length];
 }
 
 function validationError(message) {
