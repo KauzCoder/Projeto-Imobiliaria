@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { loginAccount, saveAuthSession } from "../services/authService";
+import {
+  clearAuthSession,
+  getStoredAuth,
+  loginAccount,
+  saveAuthSession,
+} from "../services/authService";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -11,6 +16,15 @@ export default function Login() {
   const [loggedAccount, setLoggedAccount] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const storedAuth = getStoredAuth();
+
+    if (storedAuth.token && storedAuth.account) {
+      setLoggedAccount(storedAuth.account);
+      setSuccess(`Voce ja esta logado como ${storedAuth.account.name ?? "usuario"}.`);
+    }
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -30,6 +44,7 @@ export default function Login() {
       saveAuthSession(session);
       setSuccess(`Login confirmado. Bem-vindo, ${session.account?.name ?? "usuario"}.`);
       setLoggedAccount(session.account);
+      setPassword("");
     } catch (err) {
       const message = err.response?.data?.message ?? "Erro ao fazer login. Tente novamente.";
       setError(message);
@@ -108,6 +123,19 @@ export default function Login() {
                   className="mt-6 flex min-h-12 w-full items-center justify-center rounded-md bg-emerald-500 px-5 text-sm font-bold uppercase tracking-[0.04em] text-white transition hover:bg-emerald-600"
                 >
                   Ir para inicio
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearAuthSession();
+                    setLoggedAccount(null);
+                    setSuccess("");
+                    setEmail("");
+                    setPassword("");
+                  }}
+                  className="mt-3 flex min-h-11 w-full items-center justify-center rounded-md border border-slate-200 px-5 text-sm font-bold uppercase tracking-[0.04em] text-slate-700 transition hover:bg-white"
+                >
+                  Sair desta conta
                 </button>
               </div>
             ) : (
@@ -218,6 +246,8 @@ export default function Login() {
             </form>
             )}
 
+            {!loggedAccount && (
+            <>
             <div className="mt-8">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -254,6 +284,8 @@ export default function Login() {
                 Cadastre-se
               </Link>
             </p>
+            </>
+            )}
           </div>
         </section>
       </div>

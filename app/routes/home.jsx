@@ -79,7 +79,9 @@ export default function Home() {
   const [searchFilters, setSearchFilters] = useState({
     status: "Venda",
     country: "",
+    region: "",
     city: "",
+    neighborhood: "",
     type: "",
     priceRange: "",
   });
@@ -115,23 +117,38 @@ export default function Home() {
 
   const searchOptions = useMemo(() => {
     const countryProperties = searchBaseProperties;
-    const cityProperties = searchFilters.country
+    const regionProperties = searchFilters.country
       ? countryProperties.filter((property) => property.country === searchFilters.country)
       : countryProperties;
-    const typeProperties = searchFilters.city
+    const cityProperties = searchFilters.region
+      ? regionProperties.filter((property) => property.region === searchFilters.region)
+      : regionProperties;
+    const neighborhoodProperties = searchFilters.city
       ? cityProperties.filter((property) => property.city === searchFilters.city)
       : cityProperties;
+    const typeProperties = searchFilters.neighborhood
+      ? neighborhoodProperties.filter((property) => property.neighborhood === searchFilters.neighborhood)
+      : neighborhoodProperties;
     const priceProperties = searchFilters.type
       ? typeProperties.filter((property) => property.type === searchFilters.type)
       : typeProperties;
 
     return {
       countries: uniqueValues(countryProperties, "country"),
+      regions: uniqueValues(regionProperties, "region"),
       cities: uniqueValues(cityProperties, "city"),
+      neighborhoods: uniqueValues(neighborhoodProperties, "neighborhood"),
       types: uniqueValues(typeProperties, "type"),
       priceRanges: priceRanges.filter((range) => priceProperties.some((property) => isInsideRange(property, range))),
     };
-  }, [searchBaseProperties, searchFilters.country, searchFilters.city, searchFilters.type]);
+  }, [
+    searchBaseProperties,
+    searchFilters.country,
+    searchFilters.region,
+    searchFilters.city,
+    searchFilters.neighborhood,
+    searchFilters.type,
+  ]);
 
   const matchingSearchCount = useMemo(() => {
     const selectedRange = priceRanges.find((range) => range.label === searchFilters.priceRange);
@@ -139,7 +156,9 @@ export default function Home() {
     return normalizedProperties.filter((property) => {
       if (searchFilters.status && property.status !== searchFilters.status) return false;
       if (searchFilters.country && property.country !== searchFilters.country) return false;
+      if (searchFilters.region && property.region !== searchFilters.region) return false;
       if (searchFilters.city && property.city !== searchFilters.city) return false;
+      if (searchFilters.neighborhood && property.neighborhood !== searchFilters.neighborhood) return false;
       if (searchFilters.type && property.type !== searchFilters.type) return false;
       if (selectedRange && !isInsideRange(property, selectedRange)) return false;
       return true;
@@ -175,7 +194,9 @@ export default function Home() {
 
     if (searchFilters.status) params.set("status", searchFilters.status);
     if (searchFilters.country) params.set("country", searchFilters.country);
+    if (searchFilters.region) params.set("region", searchFilters.region);
     if (searchFilters.city) params.set("city", searchFilters.city);
+    if (searchFilters.neighborhood) params.set("neighborhood", searchFilters.neighborhood);
     if (searchFilters.type) params.set("type", searchFilters.type);
     if (selectedRange?.minPrice) params.set("minPrice", selectedRange.minPrice);
     if (selectedRange?.maxPrice) params.set("maxPrice", selectedRange.maxPrice);
@@ -189,18 +210,35 @@ export default function Home() {
 
       if (field === "status") {
         next.country = "";
+        next.region = "";
         next.city = "";
+        next.neighborhood = "";
         next.type = "";
         next.priceRange = "";
       }
 
       if (field === "country") {
+        next.region = "";
         next.city = "";
+        next.neighborhood = "";
+        next.type = "";
+        next.priceRange = "";
+      }
+
+      if (field === "region") {
+        next.city = "";
+        next.neighborhood = "";
         next.type = "";
         next.priceRange = "";
       }
 
       if (field === "city") {
+        next.neighborhood = "";
+        next.type = "";
+        next.priceRange = "";
+      }
+
+      if (field === "neighborhood") {
         next.type = "";
         next.priceRange = "";
       }
@@ -217,7 +255,9 @@ export default function Home() {
     setSearchFilters({
       status: "Venda",
       country: "",
+      region: "",
       city: "",
+      neighborhood: "",
       type: "",
       priceRange: "",
     });
@@ -280,7 +320,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                   <ShortcutSelect
                     label="Pais"
                     value={searchFilters.country}
@@ -290,12 +330,28 @@ export default function Home() {
                     disabled={searchOptions.countries.length === 0}
                   />
                   <ShortcutSelect
+                    label="Regiao"
+                    value={searchFilters.region}
+                    onChange={(value) => updateSearchFilter("region", value)}
+                    options={searchOptions.regions}
+                    placeholder="Todas"
+                    disabled={searchOptions.regions.length === 0}
+                  />
+                  <ShortcutSelect
                     label="Cidade"
                     value={searchFilters.city}
                     onChange={(value) => updateSearchFilter("city", value)}
                     options={searchOptions.cities}
                     placeholder="Todas"
                     disabled={searchOptions.cities.length === 0}
+                  />
+                  <ShortcutSelect
+                    label="Bairro"
+                    value={searchFilters.neighborhood}
+                    onChange={(value) => updateSearchFilter("neighborhood", value)}
+                    options={searchOptions.neighborhoods}
+                    placeholder="Todos"
+                    disabled={searchOptions.neighborhoods.length === 0}
                   />
                   <ShortcutSelect
                     label="Tipo"
