@@ -1,16 +1,15 @@
-import { Broker } from "../models/Broker.js";
-import { Property } from "../models/Property.js";
-import { buildAccountPayload } from "../utils/password.js";
+import {
+  createBroker,
+  deleteBroker,
+  getBrokerById,
+  listBrokerProperties,
+  listBrokers,
+  updateBroker,
+} from "../services/brokerService.js";
 
 export async function listBrokers(req, res, next) {
   try {
-    const { verified, specialty } = req.query;
-    const filters = {};
-
-    if (verified) filters.verified = verified === "true";
-    if (specialty) filters.specialties = specialty;
-
-    const brokers = await Broker.find(filters);
+    const brokers = await listBrokers(req.query);
     res.json(brokers);
   } catch (error) {
     next(error);
@@ -19,21 +18,19 @@ export async function listBrokers(req, res, next) {
 
 export async function getBroker(req, res, next) {
   try {
-    const broker = await Broker.findById(req.params.id);
-
-    if (!broker) {
-      return res.status(404).json({ message: "Corretor nao encontrado." });
-    }
-
+    const broker = await getBrokerById(req.params.id);
     res.json(broker);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function createBroker(req, res, next) {
   try {
-    const broker = await Broker.create(buildAccountPayload(req.body));
+    const broker = await createBroker(req.body);
     res.status(201).json(broker);
   } catch (error) {
     next(error);
@@ -42,43 +39,36 @@ export async function createBroker(req, res, next) {
 
 export async function updateBroker(req, res, next) {
   try {
-    const broker = await Broker.findByIdAndUpdate(req.params.id, buildAccountPayload(req.body));
-
-    if (!broker) {
-      return res.status(404).json({ message: "Corretor nao encontrado." });
-    }
-
+    const broker = await updateBroker(req.params.id, req.body);
     res.json(broker);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function deleteBroker(req, res, next) {
   try {
-    const broker = await Broker.findByIdAndDelete(req.params.id);
-
-    if (!broker) {
-      return res.status(404).json({ message: "Corretor nao encontrado." });
-    }
-
+    await deleteBroker(req.params.id);
     res.status(204).send();
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function listBrokerProperties(req, res, next) {
   try {
-    const broker = await Broker.findById(req.params.id);
-
-    if (!broker) {
-      return res.status(404).json({ message: "Corretor nao encontrado." });
-    }
-
-    const properties = await Property.find({ broker: req.params.id });
+    const properties = await listBrokerProperties(req.params.id);
     res.json(properties);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
