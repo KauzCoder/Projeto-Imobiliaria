@@ -2,7 +2,7 @@ import axios from "axios";
 import { fallbackProperties } from "../data/properties";
 import { normalizeProperty } from "../utils/propertyUtils";
 
-const apiUrl = (import.meta.env.DEV ? import.meta.env.VITE_API_URL || "/api" : "/api").replace(/\/$/, "");
+const apiUrl = normalizeApiUrl(import.meta.env.DEV ? import.meta.env.VITE_API_URL || "/api" : "/api");
 
 export async function getProperties() {
   try {
@@ -32,4 +32,14 @@ export async function getPropertyById(propertyId) {
     const message = error.response?.data?.message ?? "Imovel nao encontrado.";
     throw new Error(message);
   }
+}
+
+function normalizeApiUrl(value) {
+  const normalizedValue = value.replace(/\/$/, "");
+
+  if (normalizedValue === "/api" || normalizedValue.endsWith("/api")) {
+    return normalizedValue;
+  }
+
+  return `${normalizedValue}/api`;
 }

@@ -8,12 +8,15 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loggedAccount, setLoggedAccount] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
     setSuccess("");
+    setLoggedAccount(null);
     setIsLoading(true);
 
     if (!email.trim() || !password) {
@@ -26,9 +29,7 @@ export default function Login() {
       const session = await loginAccount({ email: email.trim(), password });
       saveAuthSession(session);
       setSuccess(`Login confirmado. Bem-vindo, ${session.account?.name ?? "usuario"}.`);
-      window.setTimeout(() => {
-        navigate("/");
-      }, 900);
+      setLoggedAccount(session.account);
     } catch (err) {
       const message = err.response?.data?.message ?? "Erro ao fazer login. Tente novamente.";
       setError(message);
@@ -84,6 +85,32 @@ export default function Login() {
               </p>
             </div>
 
+            {loggedAccount ? (
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 p-6">
+                <div className="mb-5 grid size-12 place-items-center rounded-full bg-emerald-500 text-white">
+                  <svg className="size-7" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M5 13L9 17L19 7"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2.4"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-slate-950">Login confirmado</h3>
+                <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
+                  Voce entrou como <strong className="text-slate-950">{loggedAccount.name}</strong>. Sua sessao foi salva neste navegador.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate("/")}
+                  className="mt-6 flex min-h-12 w-full items-center justify-center rounded-md bg-emerald-500 px-5 text-sm font-bold uppercase tracking-[0.04em] text-white transition hover:bg-emerald-600"
+                >
+                  Ir para inicio
+                </button>
+              </div>
+            ) : (
             <form className="space-y-5" onSubmit={handleSubmit}>
               <label className="block">
                 <span className="text-sm font-bold text-slate-700">Email</span>
@@ -102,17 +129,55 @@ export default function Login() {
 
               <label className="block">
                 <span className="text-sm font-bold text-slate-700">Senha</span>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  className="mt-2 min-h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white"
-                  placeholder="Digite sua senha"
-                />
+                <div className="relative mt-2">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="min-h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-4 pr-12 text-sm font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white"
+                    placeholder="Digite sua senha"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    className="absolute right-2 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-950"
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? (
+                      <svg className="size-5" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M3 3L21 21M10.6 10.6A2 2 0 0 0 13.4 13.4M9.2 5.5A9.7 9.7 0 0 1 12 5C17.5 5 21 12 21 12A16.2 16.2 0 0 1 18.7 15.2M6.5 6.5C4.3 8 3 12 3 12S6.5 19 12 19C13.3 19 14.5 18.6 15.5 18"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                        />
+                      </svg>
+                    ) : (
+                      <svg className="size-5" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M3 12S6.5 5 12 5S21 12 21 12S17.5 19 12 19S3 12 3 12Z"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                        />
+                        <path
+                          d="M12 15A3 3 0 1 0 12 9A3 3 0 0 0 12 15Z"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </label>
 
               {error && (
@@ -151,6 +216,7 @@ export default function Login() {
                 {isLoading ? "Entrando..." : "Entrar"}
               </button>
             </form>
+            )}
 
             <div className="mt-8">
               <div className="relative">
