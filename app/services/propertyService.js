@@ -2,7 +2,7 @@ import axios from "axios";
 import { fallbackProperties } from "../data/properties";
 import { normalizeProperty } from "../utils/propertyUtils";
 
-const apiUrl = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
+const apiUrl = (import.meta.env.DEV ? import.meta.env.VITE_API_URL || "/api" : "/api").replace(/\/$/, "");
 
 export async function getProperties() {
   try {

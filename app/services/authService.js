@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const apiUrl = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
+const apiUrl = (import.meta.env.DEV ? import.meta.env.VITE_API_URL || "/api" : "/api").replace(/\/$/, "");
 const tokenKey = "authToken";
 const accountKey = "authAccount";
 const authChangeEvent = "auth-state-change";

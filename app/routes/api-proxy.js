@@ -65,5 +65,6 @@ function getApiBaseUrl() {
     return "";
   }
 
-  return value.replace(/\/$/, "").replace(/\/api$/, "");
+  const normalizedValue = value.replace(/\/$/, "");
+  return normalizedValue.endsWith("/api") ? normalizedValue : `${normalizedValue}/api`;
 }
