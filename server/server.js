@@ -13,28 +13,15 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 4000;
-<<<<<<< HEAD
-const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-const allowedOrigins = [
-  clientUrl,
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-].filter(Boolean);
-=======
 const clientUrls = (process.env.CLIENT_URL || "http://localhost:5173")
   .split(",")
   .map((url) => url.trim().replace(/\/$/, ""))
   .filter(Boolean);
->>>>>>> feature/mongodb-seed
 
 app.use(
   cors({
     origin(origin, callback) {
-<<<<<<< HEAD
-      if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
-=======
       if (!origin || clientUrls.includes(origin.replace(/\/$/, ""))) {
->>>>>>> feature/mongodb-seed
         callback(null, true);
         return;
       }
