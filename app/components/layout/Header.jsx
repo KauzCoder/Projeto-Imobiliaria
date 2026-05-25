@@ -86,6 +86,17 @@ function Profile({ account }) {
   );
 }
 
+function AccountSummary({ account }) {
+  return (
+    <div className="hidden min-w-0 items-center gap-2 sm:flex">
+      <Profile account={account} />
+      <span className="max-w-32 truncate text-sm font-semibold text-white">
+        {account?.name ?? "Minha conta"}
+      </span>
+    </div>
+  );
+}
+
 export function Header() {
   const [auth, setAuth] = useState({ token: "", account: null });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -124,10 +135,12 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           {isLoggedIn ? (
-            <div className="hidden items-center gap-[15px] lg:flex">
-              <Bell />
-              <Message />
-              <Profile account={auth.account} />
+            <div className="flex items-center gap-3">
+              <div className="hidden items-center gap-[15px] lg:flex">
+                <Bell />
+                <Message />
+              </div>
+              <AccountSummary account={auth.account} />
               <button
                 type="button"
                 onClick={() => {

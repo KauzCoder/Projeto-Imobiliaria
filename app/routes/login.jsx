@@ -7,11 +7,13 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
+    setSuccess("");
     setIsLoading(true);
 
     if (!email.trim() || !password) {
@@ -23,7 +25,10 @@ export default function Login() {
     try {
       const session = await loginAccount({ email: email.trim(), password });
       saveAuthSession(session);
-      navigate("/");
+      setSuccess(`Login confirmado. Bem-vindo, ${session.account?.name ?? "usuario"}.`);
+      window.setTimeout(() => {
+        navigate("/");
+      }, 900);
     } catch (err) {
       const message = err.response?.data?.message ?? "Erro ao fazer login. Tente novamente.";
       setError(message);
@@ -113,6 +118,12 @@ export default function Login() {
               {error && (
                 <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
                   {error}
+                </p>
+              )}
+
+              {success && (
+                <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+                  {success}
                 </p>
               )}
 
