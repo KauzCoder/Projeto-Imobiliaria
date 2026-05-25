@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
+import { loginAccount, saveAuthSession } from "../services/authService";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -13,14 +14,19 @@ export default function Login() {
     setError("");
     setIsLoading(true);
 
+    if (!email.trim() || !password) {
+      setError("Preencha todos os campos.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      if (email && password) {
-        navigate("/");
-      } else {
-        setError("Preencha todos os campos.");
-      }
-    } catch {
-      setError("Erro ao fazer login. Tente novamente.");
+      const session = await loginAccount({ email: email.trim(), password });
+      saveAuthSession(session);
+      navigate("/");
+    } catch (err) {
+      const message = err.response?.data?.message ?? "Erro ao fazer login. Tente novamente.";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
