@@ -1,3 +1,5 @@
+const fallbackApiUrl = "https://projeto-imobiliaria-9dku.onrender.com";
+
 const hopByHopHeaders = new Set([
   "connection",
   "content-encoding",
@@ -59,11 +61,7 @@ async function proxyApiRequest(request, params) {
 }
 
 function getApiBaseUrl() {
-  const value = process.env.API_PROXY_URL || process.env.VITE_API_URL;
-
-  if (!value) {
-    return "";
-  }
+  const value = process.env.API_PROXY_URL || process.env.VITE_API_URL || fallbackApiUrl;
 
   const normalizedValue = value.replace(/\/$/, "");
   return normalizedValue.endsWith("/api") ? normalizedValue : `${normalizedValue}/api`;
