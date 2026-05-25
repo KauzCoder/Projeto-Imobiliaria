@@ -1,221 +1,150 @@
-import { dbAll, dbBatch, dbGet, dbRun } from "../config/database.js";
+import { prisma } from "../config/database.js";
 
 const allowedTypes = new Set(["Apartamento", "Casa", "Cobertura", "Comercial", "Terreno"]);
 const allowedStatuses = new Set(["Venda", "Aluguel"]);
 const allowedCreatedByModels = new Set(["Admin", "SuperUser"]);
 
-const columnMap = {
-  title: "title",
-  description: "description",
-  type: "type",
-  status: "status",
-  price: "price",
-  bedrooms: "bedrooms",
-  bathrooms: "bathrooms",
-  area: "area",
-  parkingSpaces: "parking_spaces",
-  imageUrl: "image_url",
-  broker: "broker_id",
-  owner: "owner_id",
-  featured: "featured",
-  "address.street": "address_street",
-  "address.district": "address_district",
-  "address.city": "address_city",
-  "address.state": "address_state",
-  "location.lat": "location_lat",
-  "location.lng": "location_lng",
-  "createdBy.id": "created_by_id",
-  "createdBy.model": "created_by_model",
-};
-
 export const Property = {
   async find(filters = {}) {
-    const { clauses, params } = buildFilters(filters);
-    const rows = await dbAll(
-      `SELECT * FROM properties ${clauses} ORDER BY featured DESC, created_at DESC`,
-      params
-    );
+    const where = buildWhere(filters);
+    const rows = await prisma.property.findMany({
+      where,
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+    });
 
     return rows.map(mapPropertyRow);
   },
 
   async findById(id) {
-    const row = await dbGet("SELECT * FROM properties WHERE id = ?", [id]);
+    const row = await prisma.property.findUnique({ where: { id: Number(id) } });
     return row ? mapPropertyRow(row) : null;
   },
 
   async create(data) {
     const payload = normalizePropertyPayload(data, { partial: false });
-    const now = new Date().toISOString();
-
-    const result = await dbRun(
-      `
-        INSERT INTO properties (
-          title, description, type, status, price,
-          address_street, address_district, address_city, address_state,
-          location_lat, location_lng,
-          bedrooms, bathrooms, area, parking_spaces, image_url,
-          broker_id, owner_id, created_by_id, created_by_model, featured,
-          created_at, updated_at
-        )
-        VALUES (
-          @title, @description, @type, @status, @price,
-          @address_street, @address_district, @address_city, @address_state,
-          @location_lat, @location_lng,
-          @bedrooms, @bathrooms, @area, @parking_spaces, @image_url,
-          @broker_id, @owner_id, @created_by_id, @created_by_model, @featured,
-          @created_at, @updated_at
-        )
-        RETURNING id
-      `,
-      { ...payload, created_at: now, updated_at: now }
-    );
-
-    return this.findById(result.lastInsertRowid);
+    const row = await prisma.property.create({ data: payload });
+    return mapPropertyRow(row);
   },
 
   async findByIdAndUpdate(id, data) {
     const payload = normalizePropertyPayload(data, { partial: true });
-    const entries = Object.entries(payload);
 
-    if (entries.length === 0) {
+    if (Object.keys(payload).length === 0) {
       return this.findById(id);
     }
 
-    const assignments = entries.map(([key]) => `${key} = @${key}`).join(", ");
-    const result = await dbRun(
-      `UPDATE properties SET ${assignments}, updated_at = @updated_at WHERE id = @id`,
-      { ...payload, id, updated_at: new Date().toISOString() }
-    );
-
-    return result.changes > 0 ? this.findById(id) : null;
+    try {
+      const row = await prisma.property.update({
+        where: { id: Number(id) },
+        data: payload,
+      });
+      return mapPropertyRow(row);
+    } catch (error) {
+      if (error.code === "P2025") return null;
+      throw error;
+    }
   },
 
   async findByIdAndDelete(id) {
-    const property = await this.findById(id);
-
-    if (!property) {
-      return null;
+    try {
+      const row = await prisma.property.delete({ where: { id: Number(id) } });
+      return mapPropertyRow(row);
+    } catch (error) {
+      if (error.code === "P2025") return null;
+      throw error;
     }
-
-    await dbRun("DELETE FROM properties WHERE id = ?", [id]);
-    return property;
   },
 
   async deleteMany() {
-    await dbRun("TRUNCATE TABLE properties RESTART IDENTITY");
+    await prisma.property.deleteMany();
   },
 
   async insertMany(properties) {
-    const now = new Date().toISOString();
-    const statements = properties.map((item) => {
-      const payload = normalizePropertyPayload(item, { partial: false });
-
-      return {
-        sql: `
-          INSERT INTO properties (
-            title, description, type, status, price,
-            address_street, address_district, address_city, address_state,
-            location_lat, location_lng,
-            bedrooms, bathrooms, area, parking_spaces, image_url,
-            broker_id, owner_id, created_by_id, created_by_model, featured,
-            created_at, updated_at
-          )
-          VALUES (
-            @title, @description, @type, @status, @price,
-            @address_street, @address_district, @address_city, @address_state,
-            @location_lat, @location_lng,
-            @bedrooms, @bathrooms, @area, @parking_spaces, @image_url,
-            @broker_id, @owner_id, @created_by_id, @created_by_model, @featured,
-            @created_at, @updated_at
-          )
-        `,
-        args: { ...payload, created_at: now, updated_at: now },
-      };
-    });
-
-    await dbBatch(statements);
+    const data = properties.map((item) => normalizePropertyPayload(item, { partial: false }));
+    await prisma.property.createMany({ data });
     return this.find();
   },
 };
 
-const filterColumnMap = {
-  broker: "broker_id",
-  owner: "owner_id",
-  parkingSpaces: "parking_spaces",
-  "address.city": "address_city",
-  "address.district": "address_district",
-  "address.state": "address_state",
-};
+function buildWhere(filters) {
+  const where = {};
 
-function buildFilters(filters) {
-  const clauses = [];
-  const params = {};
-
-  if (filters.status) {
-    clauses.push("status = @status");
-    params.status = filters.status;
-  }
-
-  if (filters.type) {
-    clauses.push("type = @type");
-    params.type = filters.type;
-  }
-
-  if (filters.featured !== undefined) {
-    clauses.push("featured = @featured");
-    params.featured = Boolean(filters.featured);
-  }
-
-  for (const [key, column] of Object.entries(filterColumnMap)) {
-    if (filters[key] !== undefined) {
-      clauses.push(`${column} = @${column}`);
-      params[column] = filters[key];
-    }
-  }
+  if (filters.status) where.status = filters.status;
+  if (filters.type) where.type = filters.type;
+  if (filters.featured !== undefined) where.featured = Boolean(filters.featured);
+  if (filters.broker !== undefined) where.brokerId = Number(filters.broker);
+  if (filters.owner !== undefined) where.ownerId = Number(filters.owner);
+  if (filters["address.city"] !== undefined) where.addressCity = filters["address.city"];
+  if (filters["address.district"] !== undefined) where.addressDistrict = filters["address.district"];
+  if (filters["address.state"] !== undefined) where.addressState = filters["address.state"];
 
   for (const field of ["price", "bedrooms", "bathrooms", "area"]) {
-    if (filters[field]?.$gte !== undefined) {
-      clauses.push(`${field} >= @${field}_gte`);
-      params[`${field}_gte`] = Number(filters[field].$gte);
-    }
+    if (filters[field]?.$gte !== undefined || filters[field]?.$lte !== undefined) {
+      where[field] = {};
 
-    if (filters[field]?.$lte !== undefined) {
-      clauses.push(`${field} <= @${field}_lte`);
-      params[`${field}_lte`] = Number(filters[field].$lte);
+      if (filters[field].$gte !== undefined) {
+        where[field].gte = Number(filters[field].$gte);
+      }
+
+      if (filters[field].$lte !== undefined) {
+        where[field].lte = Number(filters[field].$lte);
+      }
     }
   }
 
   if (filters.parkingSpaces?.$gte !== undefined) {
-    clauses.push("parking_spaces >= @parking_spaces_gte");
-    params.parking_spaces_gte = Number(filters.parkingSpaces.$gte);
+    where.parkingSpaces = { gte: Number(filters.parkingSpaces.$gte) };
   }
 
-  return {
-    clauses: clauses.length ? `WHERE ${clauses.join(" AND ")}` : "",
-    params,
-  };
+  return where;
 }
 
 function normalizePropertyPayload(data, { partial }) {
   const flattened = flattenProperty(data);
   const payload = {};
 
-  for (const [key, column] of Object.entries(columnMap)) {
+  const fields = {
+    title: "title",
+    description: "description",
+    type: "type",
+    status: "status",
+    price: "price",
+    bedrooms: "bedrooms",
+    bathrooms: "bathrooms",
+    area: "area",
+    parkingSpaces: "parkingSpaces",
+    imageUrl: "imageUrl",
+    broker: "brokerId",
+    owner: "ownerId",
+    featured: "featured",
+    "address.street": "addressStreet",
+    "address.district": "addressDistrict",
+    "address.city": "addressCity",
+    "address.state": "addressState",
+    "address.country": "addressCountry",
+    country: "addressCountry",
+    "location.lat": "locationLat",
+    "location.lng": "locationLng",
+    "createdBy.id": "createdById",
+    "createdBy.model": "createdByModel",
+  };
+
+  for (const [key, field] of Object.entries(fields)) {
     if (flattened[key] !== undefined) {
-      payload[column] = normalizeValue(key, flattened[key]);
+      payload[field] = normalizeValue(key, flattened[key]);
     }
   }
 
   if (!partial) {
+    payload.addressCountry ??= "Brasil";
     ensureRequired(payload);
     payload.status ??= "Venda";
-    payload.parking_spaces ??= 0;
-    payload.featured ??= 0;
-    payload.broker_id ??= null;
-    payload.owner_id ??= null;
-    payload.created_by_id ??= null;
-    payload.created_by_model ??= null;
+    payload.parkingSpaces ??= 0;
+    payload.featured ??= false;
+    payload.brokerId ??= null;
+    payload.ownerId ??= null;
+    payload.createdById ??= null;
+    payload.createdByModel ??= null;
   }
 
   return payload;
@@ -228,6 +157,7 @@ function flattenProperty(data) {
     "address.district": data.address?.district,
     "address.city": data.address?.city,
     "address.state": data.address?.state,
+    "address.country": data.address?.country,
     "location.lat": data.location?.lat,
     "location.lng": data.location?.lng,
     "createdBy.id": data.createdBy?.id,
@@ -252,7 +182,7 @@ function normalizeValue(key, value) {
     throw validationError("Modelo do criador invalido.");
   }
 
-  if (["price", "bedrooms", "bathrooms", "area", "parkingSpaces"].includes(key)) {
+  if (["price", "bedrooms", "bathrooms", "area", "parkingSpaces", "broker", "owner", "createdBy.id"].includes(key)) {
     const numberValue = Number(value);
 
     if (!Number.isFinite(numberValue) || numberValue < 0) {
@@ -285,16 +215,17 @@ function ensureRequired(payload) {
     "description",
     "type",
     "price",
-    "address_street",
-    "address_district",
-    "address_city",
-    "address_state",
-    "location_lat",
-    "location_lng",
+    "addressStreet",
+    "addressDistrict",
+    "addressCity",
+    "addressState",
+    "addressCountry",
+    "locationLat",
+    "locationLng",
     "bedrooms",
     "bathrooms",
     "area",
-    "image_url",
+    "imageUrl",
   ];
 
   for (const field of required) {
@@ -314,29 +245,31 @@ function mapPropertyRow(row) {
     status: row.status,
     price: Number(row.price),
     address: {
-      street: row.address_street,
-      district: row.address_district,
-      city: row.address_city,
-      state: row.address_state,
+      street: row.addressStreet,
+      district: row.addressDistrict,
+      city: row.addressCity,
+      state: row.addressState,
+      country: row.addressCountry,
     },
+    country: row.addressCountry,
     location: {
-      lat: row.location_lat,
-      lng: row.location_lng,
+      lat: row.locationLat,
+      lng: row.locationLng,
     },
     bedrooms: row.bedrooms,
     bathrooms: row.bathrooms,
     area: Number(row.area),
-    parkingSpaces: row.parking_spaces,
-    imageUrl: row.image_url,
-    broker: row.broker_id,
-    owner: row.owner_id,
+    parkingSpaces: row.parkingSpaces,
+    imageUrl: row.imageUrl,
+    broker: row.brokerId,
+    owner: row.ownerId,
     createdBy:
-      row.created_by_id || row.created_by_model
-        ? { id: row.created_by_id, model: row.created_by_model }
+      row.createdById || row.createdByModel
+        ? { id: row.createdById, model: row.createdByModel }
         : undefined,
     featured: Boolean(row.featured),
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 

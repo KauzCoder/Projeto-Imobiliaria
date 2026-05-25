@@ -7,11 +7,16 @@
     "dev": "react-router dev",
     "dev:client": "react-router dev",
     "dev:server": "node server/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:reset": "prisma db push --force-reset --accept-data-loss",
     "seed": "node server/seed.js",
     "start": "react-router-serve ./build/server/index.js",
     "start:api": "node server/server.js"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "@react-router/node": "7.14.0",
     "@react-router/serve": "7.14.0",
     "axios": "^1.15.2",
@@ -29,6 +34,7 @@
   "devDependencies": {
     "@react-router/dev": "7.14.0",
     "@tailwindcss/vite": "^4.2.2",
+    "prisma": "^7.8.0",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3"
   }

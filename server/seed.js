@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { closeDatabase, connectDatabase, dbRun } from "./config/database.js";
+import { closeDatabase, connectDatabase, prisma } from "./config/database.js";
 import {
   seedAdmins,
   seedBrokers,
@@ -15,7 +15,7 @@ dotenv.config();
 
 try {
   await connectDatabase();
-  await dbRun("TRUNCATE TABLE properties, users, brokers, admins, super_users RESTART IDENTITY");
+  await prisma.$executeRawUnsafe("TRUNCATE TABLE properties, users, brokers, admins, super_users RESTART IDENTITY CASCADE");
 
   const superUsers = await Promise.all(
     seedSuperUsers.map((account) =>

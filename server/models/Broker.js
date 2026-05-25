@@ -1,78 +1,56 @@
-import { dbAll, dbGet, dbRun } from "../config/database.js";
+import { prisma } from "../config/database.js";
 import { mapAccountRow, normalizeAccountFields } from "./accountFields.js";
 
 export const Broker = {
   async find(filters = {}) {
-    const clauses = [];
-    const params = {};
+    const rows = await prisma.broker.findMany({
+      where: filters.verified === undefined ? undefined : { verified: Boolean(filters.verified) },
+      orderBy: [{ verified: "desc" }, { createdAt: "desc" }],
+    });
 
-    if (filters.verified !== undefined) {
-      clauses.push("verified = @verified");
-      params.verified = Boolean(filters.verified);
+    const brokers = rows.map((row) => mapBrokerRow(row));
+
+    if (!filters.specialties) {
+      return brokers;
     }
 
-    if (filters.specialties) {
-      clauses.push("specialties @> @specialties::jsonb");
-      params.specialties = JSON.stringify([filters.specialties]);
-    }
-
-    const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
-    const rows = await dbAll(
-      `SELECT * FROM brokers ${where} ORDER BY verified DESC, created_at DESC`,
-      params
-    );
-
-    return rows.map((row) => mapBrokerRow(row));
+    return brokers.filter((broker) => broker.specialties.includes(filters.specialties));
   },
 
   async findById(id) {
-    const row = await dbGet("SELECT * FROM brokers WHERE id = ?", [id]);
+    const row = await prisma.broker.findUnique({ where: { id: Number(id) } });
     return row ? mapBrokerRow(row) : null;
   },
 
   async findByEmail(email) {
-    const row = await dbGet("SELECT * FROM brokers WHERE email = ?", [email?.trim().toLowerCase()]);
+    const row = await prisma.broker.findUnique({ where: { email: email?.trim().toLowerCase() } });
     return row ? mapBrokerRow(row, { includePassword: true }) : null;
   },
 
   async updateLastLogin(id) {
-    await dbRun("UPDATE brokers SET last_login_at = NOW(), updated_at = NOW() WHERE id = ?", [id]);
-    return this.findById(id);
+    const row = await prisma.broker.update({
+      where: { id: Number(id) },
+      data: { lastLoginAt: new Date() },
+    });
+    return mapBrokerRow(row);
   },
 
   async create(data) {
     const account = normalizeAccountFields(data, "corretor");
-    const now = new Date().toISOString();
-
-    const result = await dbRun(
-      `
-        INSERT INTO brokers (
-          name, email, password_hash, phone, document, role, active, last_login_at,
-          creci, bio, specialties, service_areas, commission_rate, verified, social_links,
-          created_at, updated_at
-        )
-        VALUES (
-          @name, @email, @password_hash, @phone, @document, @role, @active, @last_login_at,
-          @creci, @bio, @specialties, @service_areas, @commission_rate, @verified, @social_links,
-          @created_at, @updated_at
-        )
-        RETURNING id
-      `,
-      {
+    const row = await prisma.broker.create({
+      data: {
         ...account,
         creci: data.creci?.trim().toUpperCase(),
         bio: data.bio?.trim() ?? null,
-        specialties: JSON.stringify(data.specialties ?? []),
-        service_areas: JSON.stringify(data.serviceAreas ?? []),
-        commission_rate: data.commissionRate ?? null,
+        specialties: data.specialties ?? [],
+        serviceAreas: data.serviceAreas ?? [],
+        commissionRate: data.commissionRate ?? null,
         verified: Boolean(data.verified),
-        social_links: JSON.stringify(data.socialLinks ?? {}),
-        created_at: now,
-        updated_at: now,
-      }
-    );
+        socialLinks: data.socialLinks ?? {},
+      },
+    });
 
-    return this.findById(result.lastInsertRowid);
+    return mapBrokerRow(row);
   },
 
   async findByIdAndUpdate(id, data) {
@@ -82,24 +60,26 @@ export const Broker = {
       return this.findById(id);
     }
 
-    const assignments = Object.keys(payload).map((key) => `${key} = @${key}`).join(", ");
-    const result = await dbRun(
-      `UPDATE brokers SET ${assignments}, updated_at = NOW() WHERE id = @id`,
-      { ...payload, id }
-    );
-
-    return result.changes > 0 ? this.findById(id) : null;
+    try {
+      const row = await prisma.broker.update({
+        where: { id: Number(id) },
+        data: payload,
+      });
+      return mapBrokerRow(row);
+    } catch (error) {
+      if (error.code === "P2025") return null;
+      throw error;
+    }
   },
 
   async findByIdAndDelete(id) {
-    const account = await this.findById(id);
-
-    if (!account) {
-      return null;
+    try {
+      const row = await prisma.broker.delete({ where: { id: Number(id) } });
+      return mapBrokerRow(row);
+    } catch (error) {
+      if (error.code === "P2025") return null;
+      throw error;
     }
-
-    await dbRun("DELETE FROM brokers WHERE id = ?", [id]);
-    return account;
   },
 };
 
@@ -108,18 +88,18 @@ function buildBrokerUpdatePayload(data) {
   return compact({
     name: account.name,
     email: account.email,
-    password_hash: account.password_hash,
+    passwordHash: account.passwordHash,
     phone: account.phone,
     document: account.document,
     active: data.active === undefined ? undefined : account.active,
-    last_login_at: account.last_login_at,
+    lastLoginAt: account.lastLoginAt,
     creci: data.creci?.trim().toUpperCase(),
     bio: data.bio?.trim(),
-    specialties: data.specialties ? JSON.stringify(data.specialties) : undefined,
-    service_areas: data.serviceAreas ? JSON.stringify(data.serviceAreas) : undefined,
-    commission_rate: data.commissionRate,
+    specialties: data.specialties,
+    serviceAreas: data.serviceAreas,
+    commissionRate: data.commissionRate,
     verified: data.verified === undefined ? undefined : Boolean(data.verified),
-    social_links: data.socialLinks ? JSON.stringify(data.socialLinks) : undefined,
+    socialLinks: data.socialLinks,
   });
 }
 
@@ -132,24 +112,16 @@ function mapBrokerRow(row, { includePassword = false } = {}) {
     ...mapAccountRow(row),
     creci: row.creci,
     bio: row.bio,
-    specialties: parseJsonValue(row.specialties, []),
-    serviceAreas: parseJsonValue(row.service_areas, []),
-    commissionRate: row.commission_rate === null ? null : Number(row.commission_rate),
+    specialties: row.specialties ?? [],
+    serviceAreas: row.serviceAreas ?? [],
+    commissionRate: row.commissionRate === null ? null : Number(row.commissionRate),
     verified: Boolean(row.verified),
-    socialLinks: parseJsonValue(row.social_links, {}),
+    socialLinks: row.socialLinks ?? {},
   };
 
   if (includePassword) {
-    broker.passwordHash = row.password_hash;
+    broker.passwordHash = row.passwordHash;
   }
 
   return broker;
-}
-
-function parseJsonValue(value, fallback) {
-  if (value === null || value === undefined) {
-    return fallback;
-  }
-
-  return typeof value === "string" ? JSON.parse(value) : value;
 }

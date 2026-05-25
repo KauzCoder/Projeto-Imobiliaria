@@ -18,7 +18,7 @@ export function normalizeProperty(property, index) {
     price: Number(property.price ?? 0),
     locationText:
       property.locationText ?? [address.street, address.district, cityState].filter(Boolean).join(", "),
-    country: property.country ?? "Brasil",
+    country: property.country ?? address.country ?? "Brasil",
     city: address.city ?? property.city ?? "",
     region: address.state ?? property.region ?? "",
     neighborhood: address.district ?? property.neighborhood ?? "",

@@ -1,53 +1,41 @@
-import { dbAll, dbGet, dbRun } from "../config/database.js";
+import { prisma } from "../config/database.js";
 import { mapAccountRow, normalizeAccountFields } from "./accountFields.js";
 
 export const Admin = {
   async find() {
-    const rows = await dbAll("SELECT * FROM admins ORDER BY created_at DESC");
+    const rows = await prisma.admin.findMany({ orderBy: { createdAt: "desc" } });
     return rows.map((row) => mapAdminRow(row));
   },
 
   async findById(id) {
-    const row = await dbGet("SELECT * FROM admins WHERE id = ?", [id]);
+    const row = await prisma.admin.findUnique({ where: { id: Number(id) } });
     return row ? mapAdminRow(row) : null;
   },
 
   async findByEmail(email) {
-    const row = await dbGet("SELECT * FROM admins WHERE email = ?", [email?.trim().toLowerCase()]);
+    const row = await prisma.admin.findUnique({ where: { email: email?.trim().toLowerCase() } });
     return row ? mapAdminRow(row, { includePassword: true }) : null;
   },
 
   async updateLastLogin(id) {
-    await dbRun("UPDATE admins SET last_login_at = NOW(), updated_at = NOW() WHERE id = ?", [id]);
-    return this.findById(id);
+    const row = await prisma.admin.update({
+      where: { id: Number(id) },
+      data: { lastLoginAt: new Date() },
+    });
+    return mapAdminRow(row);
   },
 
   async create(data) {
     const account = normalizeAccountFields(data, "admin");
-    const now = new Date().toISOString();
-
-    const result = await dbRun(
-      `
-        INSERT INTO admins (
-          name, email, password_hash, phone, document, role, active, last_login_at,
-          department, permissions, created_at, updated_at
-        )
-        VALUES (
-          @name, @email, @password_hash, @phone, @document, @role, @active, @last_login_at,
-          @department, @permissions, @created_at, @updated_at
-        )
-        RETURNING id
-      `,
-      {
+    const row = await prisma.admin.create({
+      data: {
         ...account,
         department: data.department?.trim() ?? null,
-        permissions: JSON.stringify(data.permissions ?? ["properties", "brokers", "users"]),
-        created_at: now,
-        updated_at: now,
-      }
-    );
+        permissions: data.permissions ?? ["properties", "brokers", "users"],
+      },
+    });
 
-    return this.findById(result.lastInsertRowid);
+    return mapAdminRow(row);
   },
 
   async findByIdAndUpdate(id, data) {
@@ -57,42 +45,42 @@ export const Admin = {
       return this.findById(id);
     }
 
-    const assignments = Object.keys(payload).map((key) => `${key} = @${key}`).join(", ");
-    const result = await dbRun(
-      `UPDATE admins SET ${assignments}, updated_at = NOW() WHERE id = @id`,
-      { ...payload, id }
-    );
-
-    return result.changes > 0 ? this.findById(id) : null;
+    try {
+      const row = await prisma.admin.update({
+        where: { id: Number(id) },
+        data: payload,
+      });
+      return mapAdminRow(row);
+    } catch (error) {
+      if (error.code === "P2025") return null;
+      throw error;
+    }
   },
 
   async findByIdAndDelete(id) {
-    const account = await this.findById(id);
-
-    if (!account) {
-      return null;
+    try {
+      const row = await prisma.admin.delete({ where: { id: Number(id) } });
+      return mapAdminRow(row);
+    } catch (error) {
+      if (error.code === "P2025") return null;
+      throw error;
     }
-
-    await dbRun("DELETE FROM admins WHERE id = ?", [id]);
-    return account;
   },
 };
 
 function buildAdminUpdatePayload(data) {
   const account = normalizeAccountFields(data, "admin");
-  const payload = compact({
+  return compact({
     name: account.name,
     email: account.email,
-    password_hash: account.password_hash,
+    passwordHash: account.passwordHash,
     phone: account.phone,
     document: account.document,
     active: data.active === undefined ? undefined : account.active,
-    last_login_at: account.last_login_at,
+    lastLoginAt: account.lastLoginAt,
     department: data.department?.trim(),
-    permissions: data.permissions ? JSON.stringify(data.permissions) : undefined,
+    permissions: data.permissions,
   });
-
-  return payload;
 }
 
 function compact(payload) {
@@ -103,20 +91,12 @@ function mapAdminRow(row, { includePassword = false } = {}) {
   const admin = {
     ...mapAccountRow(row),
     department: row.department,
-    permissions: parseJsonValue(row.permissions, []),
+    permissions: row.permissions ?? [],
   };
 
   if (includePassword) {
-    admin.passwordHash = row.password_hash;
+    admin.passwordHash = row.passwordHash;
   }
 
   return admin;
-}
-
-function parseJsonValue(value, fallback) {
-  if (value === null || value === undefined) {
-    return fallback;
-  }
-
-  return typeof value === "string" ? JSON.parse(value) : value;
 }

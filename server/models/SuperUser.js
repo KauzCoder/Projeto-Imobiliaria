@@ -1,55 +1,42 @@
-import { dbAll, dbGet, dbRun } from "../config/database.js";
+import { prisma } from "../config/database.js";
 import { mapAccountRow, normalizeAccountFields } from "./accountFields.js";
 
 export const SuperUser = {
   async find() {
-    const rows = await dbAll("SELECT * FROM super_users ORDER BY created_at DESC");
+    const rows = await prisma.superUser.findMany({ orderBy: { createdAt: "desc" } });
     return rows.map((row) => mapSuperUserRow(row));
   },
 
   async findById(id) {
-    const row = await dbGet("SELECT * FROM super_users WHERE id = ?", [id]);
+    const row = await prisma.superUser.findUnique({ where: { id: Number(id) } });
     return row ? mapSuperUserRow(row) : null;
   },
 
   async findByEmail(email) {
-    const row = await dbGet("SELECT * FROM super_users WHERE email = ?", [email?.trim().toLowerCase()]);
+    const row = await prisma.superUser.findUnique({ where: { email: email?.trim().toLowerCase() } });
     return row ? mapSuperUserRow(row, { includePassword: true }) : null;
   },
 
   async updateLastLogin(id) {
-    await dbRun("UPDATE super_users SET last_login_at = NOW(), updated_at = NOW() WHERE id = ?", [id]);
-    return this.findById(id);
+    const row = await prisma.superUser.update({
+      where: { id: Number(id) },
+      data: { lastLoginAt: new Date() },
+    });
+    return mapSuperUserRow(row);
   },
 
   async create(data) {
     const account = normalizeAccountFields(data, "super_user");
-    const now = new Date().toISOString();
-
-    const result = await dbRun(
-      `
-        INSERT INTO super_users (
-          name, email, password_hash, phone, document, role, active, last_login_at,
-          permissions, can_manage_admins, scope, created_at, updated_at
-        )
-        VALUES (
-          @name, @email, @password_hash, @phone, @document, @role, @active, @last_login_at,
-          @permissions, @can_manage_admins, @scope, @created_at, @updated_at
-        )
-        RETURNING id
-      `,
-      {
+    const row = await prisma.superUser.create({
+      data: {
         ...account,
-        permissions: JSON.stringify(data.permissions ?? ["all"]),
-        can_manage_admins:
-          data.canManageAdmins === undefined ? true : Boolean(data.canManageAdmins),
-        scope: "global",
-        created_at: now,
-        updated_at: now,
-      }
-    );
+        permissions: data.permissions ?? ["all"],
+        canManageAdmins: data.canManageAdmins === undefined ? true : Boolean(data.canManageAdmins),
+        scope: data.scope ?? "global",
+      },
+    });
 
-    return this.findById(result.lastInsertRowid);
+    return mapSuperUserRow(row);
   },
 
   async findByIdAndUpdate(id, data) {
@@ -59,24 +46,26 @@ export const SuperUser = {
       return this.findById(id);
     }
 
-    const assignments = Object.keys(payload).map((key) => `${key} = @${key}`).join(", ");
-    const result = await dbRun(
-      `UPDATE super_users SET ${assignments}, updated_at = NOW() WHERE id = @id`,
-      { ...payload, id }
-    );
-
-    return result.changes > 0 ? this.findById(id) : null;
+    try {
+      const row = await prisma.superUser.update({
+        where: { id: Number(id) },
+        data: payload,
+      });
+      return mapSuperUserRow(row);
+    } catch (error) {
+      if (error.code === "P2025") return null;
+      throw error;
+    }
   },
 
   async findByIdAndDelete(id) {
-    const account = await this.findById(id);
-
-    if (!account) {
-      return null;
+    try {
+      const row = await prisma.superUser.delete({ where: { id: Number(id) } });
+      return mapSuperUserRow(row);
+    } catch (error) {
+      if (error.code === "P2025") return null;
+      throw error;
     }
-
-    await dbRun("DELETE FROM super_users WHERE id = ?", [id]);
-    return account;
   },
 };
 
@@ -85,14 +74,13 @@ function buildSuperUserUpdatePayload(data) {
   return compact({
     name: account.name,
     email: account.email,
-    password_hash: account.password_hash,
+    passwordHash: account.passwordHash,
     phone: account.phone,
     document: account.document,
     active: data.active === undefined ? undefined : account.active,
-    last_login_at: account.last_login_at,
-    permissions: data.permissions ? JSON.stringify(data.permissions) : undefined,
-    can_manage_admins:
-      data.canManageAdmins === undefined ? undefined : Boolean(data.canManageAdmins),
+    lastLoginAt: account.lastLoginAt,
+    permissions: data.permissions,
+    canManageAdmins: data.canManageAdmins === undefined ? undefined : Boolean(data.canManageAdmins),
     scope: data.scope,
   });
 }
@@ -104,22 +92,14 @@ function compact(payload) {
 function mapSuperUserRow(row, { includePassword = false } = {}) {
   const superUser = {
     ...mapAccountRow(row),
-    permissions: parseJsonValue(row.permissions, []),
-    canManageAdmins: Boolean(row.can_manage_admins),
+    permissions: row.permissions ?? [],
+    canManageAdmins: Boolean(row.canManageAdmins),
     scope: row.scope,
   };
 
   if (includePassword) {
-    superUser.passwordHash = row.password_hash;
+    superUser.passwordHash = row.passwordHash;
   }
 
   return superUser;
-}
-
-function parseJsonValue(value, fallback) {
-  if (value === null || value === undefined) {
-    return fallback;
-  }
-
-  return typeof value === "string" ? JSON.parse(value) : value;
 }
