@@ -1,45 +1,28 @@
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export function createAccountFields(role) {
+export function normalizeAccountFields(data, role) {
   return {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-      match: [emailPattern, "Email invalido."],
-    },
-    passwordHash: {
-      type: String,
-      required: true,
-      select: false,
-    },
-    phone: {
-      type: String,
-      trim: true,
-    },
-    document: {
-      type: String,
-      trim: true,
-    },
-    role: {
-      type: String,
-      enum: [role],
-      default: role,
-      immutable: true,
-    },
-    active: {
-      type: Boolean,
-      default: true,
-    },
-    lastLoginAt: {
-      type: Date,
-    },
+    name: data.name?.trim(),
+    email: data.email?.trim().toLowerCase(),
+    passwordHash: data.passwordHash ?? data.password_hash,
+    phone: data.phone?.trim() ?? null,
+    document: data.document?.trim() ?? null,
+    role,
+    active: data.active === undefined ? true : Boolean(data.active),
+    lastLoginAt: data.lastLoginAt ?? data.last_login_at ?? null,
+  };
+}
+
+export function mapAccountRow(row) {
+  return {
+    id: row.id,
+    _id: String(row.id),
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    document: row.document,
+    role: row.role,
+    active: Boolean(row.active),
+    lastLoginAt: row.lastLoginAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }

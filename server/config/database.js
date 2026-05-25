@@ -1,20 +1,45 @@
-import dns from "dns";
-import mongoose from "mongoose";
+import "dotenv/config";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
+import pg from "pg";
+
+const { Pool } = pg;
+
+const globalForPrisma = globalThis;
+
+function createPrismaClient() {
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    throw new Error("DATABASE_URL nao foi definida. Cole a connection string do Neon no .env.");
+  }
+
+  const pool = new Pool({
+    connectionString,
+    ssl: connectionString.includes("sslmode=") ? { rejectUnauthorized: false } : undefined,
+  });
+
+  return new PrismaClient({
+    adapter: new PrismaPg(pool),
+  });
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
+
+export function getDatabase() {
+  return prisma;
+}
 
 export async function connectDatabase() {
-  const mongoUri = process.env.MONGODB_URI;
+  await prisma.$connect();
+  console.log("PostgreSQL conectado via Prisma");
+  return prisma;
+}
 
-  if (!mongoUri) {
-    throw new Error("MONGODB_URI nao foi definida no ambiente.");
-  }
-
-  const dnsServers = process.env.DNS_SERVERS?.split(",").map((server) => server.trim()).filter(Boolean);
-  if (dnsServers?.length) {
-    dns.setServers(dnsServers);
-  } else if (mongoUri.startsWith("mongodb+srv://")) {
-    dns.setServers(["8.8.8.8", "1.1.1.1"]);
-  }
-
-  await mongoose.connect(mongoUri);
-  console.log("MongoDB conectado");
+export async function closeDatabase() {
+  await prisma.$disconnect();
 }

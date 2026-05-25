@@ -1,7 +1,11 @@
 import axios from "axios";
 import { getApiUrl } from "./apiConfig";
 
+<<<<<<< HEAD
 const apiUrl = getApiUrl();
+=======
+const apiUrl = normalizeApiUrl(import.meta.env.DEV ? import.meta.env.VITE_API_URL || "/api" : "/api");
+>>>>>>> feature/mongodb-seed
 const tokenKey = "authToken";
 const accountKey = "authAccount";
 const authChangeEvent = "auth-state-change";
@@ -49,4 +53,14 @@ export function subscribeAuthChanges(callback) {
     window.removeEventListener("storage", callback);
     window.removeEventListener(authChangeEvent, callback);
   };
+}
+
+function normalizeApiUrl(value) {
+  const normalizedValue = value.replace(/\/$/, "");
+
+  if (normalizedValue === "/api" || normalizedValue.endsWith("/api")) {
+    return normalizedValue;
+  }
+
+  return `${normalizedValue}/api`;
 }

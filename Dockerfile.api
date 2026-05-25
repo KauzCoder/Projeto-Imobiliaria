@@ -1,0 +1,14 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY prisma ./prisma
+COPY prisma.config.mjs ./
+RUN npx prisma generate
+
+COPY server ./server
+
+CMD ["npm", "run", "start:api"]

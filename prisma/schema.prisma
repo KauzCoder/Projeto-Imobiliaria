@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Property {
+  id             Int      @id @default(autoincrement())
+  title          String
+  description    String
+  type           String
+  status         String   @default("Venda")
+  price          Decimal  @db.Decimal(12, 2)
+  addressStreet  String   @map("address_street")
+  addressDistrict String  @map("address_district")
+  addressCity    String   @map("address_city")
+  addressState   String   @map("address_state")
+  addressCountry String   @default("Brasil") @map("address_country")
+  locationLat    Float    @map("location_lat")
+  locationLng    Float    @map("location_lng")
+  bedrooms       Int
+  bathrooms      Int
+  area           Decimal  @db.Decimal(10, 2)
+  parkingSpaces  Int      @default(0) @map("parking_spaces")
+  imageUrl       String   @map("image_url")
+  brokerId       Int?     @map("broker_id")
+  ownerId        Int?     @map("owner_id")
+  createdById    Int?     @map("created_by_id")
+  createdByModel String?  @map("created_by_model")
+  featured       Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  broker Broker? @relation(fields: [brokerId], references: [id], onDelete: SetNull)
+  owner  User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  @@index([brokerId])
+  @@index([ownerId])
+  @@index([featured, createdAt])
+  @@map("properties")
+}
+
+model User {
+  id              Int      @id @default(autoincrement())
+  name            String
+  email           String   @unique
+  passwordHash    String   @map("password_hash")
+  phone           String?
+  document        String?
+  role            String   @default("usuario")
+  active          Boolean  @default(true)
+  lastLoginAt     DateTime? @map("last_login_at") @db.Timestamptz(6)
+  addressStreet   String?  @map("address_street")
+  addressDistrict String?  @map("address_district")
+  addressCity     String?  @map("address_city")
+  addressState    String?  @map("address_state")
+  addressZipCode  String?  @map("address_zip_code")
+  favorites       Json     @default("[]")
+  savedSearches   Json     @default("[]") @map("saved_searches")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  ownedProperties Property[]
+
+  @@map("users")
+}
+
+model Broker {
+  id             Int      @id @default(autoincrement())
+  name           String
+  email          String   @unique
+  passwordHash   String   @map("password_hash")
+  phone          String?
+  document       String?
+  role           String   @default("corretor")
+  active         Boolean  @default(true)
+  lastLoginAt    DateTime? @map("last_login_at") @db.Timestamptz(6)
+  creci          String   @unique
+  bio            String?
+  specialties    Json     @default("[]")
+  serviceAreas   Json     @default("[]") @map("service_areas")
+  commissionRate Decimal? @map("commission_rate") @db.Decimal(5, 2)
+  verified       Boolean  @default(false)
+  socialLinks    Json     @default("{}") @map("social_links")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  properties Property[]
+
+  @@map("brokers")
+}
+
+model Admin {
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  phone         String?
+  document      String?
+  role          String   @default("admin")
+  active        Boolean  @default(true)
+  lastLoginAt   DateTime? @map("last_login_at") @db.Timestamptz(6)
+  department    String?
+  permissions   Json     @default("[\"properties\",\"brokers\",\"users\"]")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("admins")
+}
+
+model SuperUser {
+  id              Int      @id @default(autoincrement())
+  name            String
+  email           String   @unique
+  passwordHash    String   @map("password_hash")
+  phone           String?
+  document        String?
+  role            String   @default("super_user")
+  active          Boolean  @default(true)
+  lastLoginAt     DateTime? @map("last_login_at") @db.Timestamptz(6)
+  permissions     Json     @default("[\"all\"]")
+  canManageAdmins Boolean  @default(true) @map("can_manage_admins")
+  scope           String   @default("global")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("super_users")
+}

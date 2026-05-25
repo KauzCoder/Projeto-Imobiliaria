@@ -1,9 +1,17 @@
-import { User } from "../models/User.js";
-import { buildAccountPayload } from "../utils/password.js";
+import {
+  addFavoriteProperty as addFavoritePropertyService,
+  createUser as createUserService,
+  deleteUser as deleteUserService,
+  getFavoriteProperties as getFavoritePropertiesService,
+  getUserById,
+  listUsers as listUsersService,
+  removeFavoriteProperty as removeFavoritePropertyService,
+  updateUser as updateUserService,
+} from "../services/userService.js";
 
 export async function listUsers(req, res, next) {
   try {
-    const users = await User.find().sort({ createdAt: -1 });
+    const users = await listUsersService();
     res.json(users);
   } catch (error) {
     next(error);
@@ -12,28 +20,24 @@ export async function listUsers(req, res, next) {
 
 export async function getUser(req, res, next) {
   try {
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "Usuario nao encontrado." });
-    }
-
+    const user = await getUserById(req.params.id);
     res.json(user);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function getFavoriteProperties(req, res, next) {
   try {
-    const user = await User.findById(req.params.id).populate("favorites");
-
-    if (!user) {
-      return res.status(404).json({ message: "Usuario nao encontrado." });
-    }
-
-    res.json(user.favorites);
+    const favorites = await getFavoritePropertiesService(req.params.id);
+    res.json(favorites);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
@@ -41,74 +45,61 @@ export async function getFavoriteProperties(req, res, next) {
 export async function addFavoriteProperty(req, res, next) {
   try {
     const propertyId = req.body.propertyId || req.params.propertyId;
-    const user = await User.findByIdAndUpdate(
+    const favorites = await addFavoritePropertyService(
       req.params.id,
-      { $addToSet: { favorites: propertyId } },
-      { new: true, runValidators: true }
-    ).populate("favorites");
-
-    if (!user) {
-      return res.status(404).json({ message: "Usuario nao encontrado." });
-    }
-
-    res.json(user.favorites);
+      propertyId,
+    );
+    res.json(favorites);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function removeFavoriteProperty(req, res, next) {
   try {
-    const user = await User.findByIdAndUpdate(
+    const favorites = await removeFavoritePropertyService(
       req.params.id,
-      { $pull: { favorites: req.params.propertyId } },
-      { new: true }
-    ).populate("favorites");
-
-    if (!user) {
-      return res.status(404).json({ message: "Usuario nao encontrado." });
-    }
-
-    res.json(user.favorites);
+      req.params.propertyId,
+    );
+    res.json(favorites);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function deleteUser(req, res, next) {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "Usuario nao encontrado." });
-    }
-
+    await deleteUserService(req.params.id);
     res.status(204).send();
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function updateUser(req, res, next) {
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, buildAccountPayload(req.body), {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: "Usuario nao encontrado." });
-    }
-
+    const user = await updateUserService(req.params.id, req.body);
     res.json(user);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function createUser(req, res, next) {
   try {
-    const user = await User.create(buildAccountPayload(req.body));
+    const user = await createUserService(req.body);
     res.status(201).json(user);
   } catch (error) {
     next(error);

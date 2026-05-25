@@ -3,7 +3,11 @@ import { fallbackProperties } from "../data/properties";
 import { normalizeProperty } from "../utils/propertyUtils";
 import { getApiUrl } from "./apiConfig";
 
+<<<<<<< HEAD
 const apiUrl = getApiUrl();
+=======
+const apiUrl = normalizeApiUrl(import.meta.env.DEV ? import.meta.env.VITE_API_URL || "/api" : "/api");
+>>>>>>> feature/mongodb-seed
 
 export async function getProperties({ useFallback = true } = {}) {
   try {
@@ -38,4 +42,14 @@ export async function getPropertyById(propertyId) {
     const message = error.response?.data?.message ?? "Imovel nao encontrado.";
     throw new Error(message);
   }
+}
+
+function normalizeApiUrl(value) {
+  const normalizedValue = value.replace(/\/$/, "");
+
+  if (normalizedValue === "/api" || normalizedValue.endsWith("/api")) {
+    return normalizedValue;
+  }
+
+  return `${normalizedValue}/api`;
 }

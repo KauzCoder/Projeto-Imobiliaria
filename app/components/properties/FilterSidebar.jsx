@@ -3,7 +3,14 @@ import { FilterSelect } from "../ui/FilterSelect";
 import { PriceRangeInput } from "../ui/PriceRangeInput";
 import { RoomSelector } from "../ui/RoomSelector";
 
-export function FilterSidebar({ filters, setFilters, onReset, options, properties }) {
+export function FilterSidebar({ filters, setFilters, onReset, options }) {
+  const updateFilter = (field, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   const handleCountryChange = (value) => {
     setFilters((prev) => ({
       ...prev,
@@ -32,24 +39,8 @@ export function FilterSidebar({ filters, setFilters, onReset, options, propertie
   };
 
   const handleNeighborhoodChange = (value) => {
-    setFilters((prev) => ({
-      ...prev,
-      neighborhood: value,
-    }));
+    updateFilter("neighborhood", value);
   };
-
-  // Filtrar opções baseado na seleção anterior
-  const filteredRegions = filters.country
-    ? [...new Set(properties.filter(p => p.country === filters.country).map(p => p.region))]
-    : options.regions;
-
-  const filteredCities = filters.region
-    ? [...new Set(properties.filter(p => p.region === filters.region).map(p => p.city))]
-    : options.cities;
-
-  const filteredNeighborhoods = filters.city
-    ? [...new Set(properties.filter(p => p.city === filters.city).map(p => p.neighborhood))]
-    : options.neighborhoods;
 
   return (
     <aside className="h-full w-full overflow-y-auto border-black/10 bg-white p-6 lg:w-[303px] lg:border-r">
@@ -66,6 +57,20 @@ export function FilterSidebar({ filters, setFilters, onReset, options, propertie
         </div>
 
         <FilterSelect
+          label="Objetivo"
+          placeholder="Comprar ou alugar"
+          value={filters.status}
+          onChange={(value) => updateFilter("status", value)}
+          options={options.statuses}
+        />
+        <FilterSelect
+          label="Tipo"
+          placeholder="Selecione o tipo"
+          value={filters.type}
+          onChange={(value) => updateFilter("type", value)}
+          options={options.types}
+        />
+        <FilterSelect
           label="Pais"
           placeholder="Selecione o pais"
           value={filters.country}
@@ -77,60 +82,61 @@ export function FilterSidebar({ filters, setFilters, onReset, options, propertie
           placeholder="Selecione a regiao"
           value={filters.region}
           onChange={handleRegionChange}
-          options={filteredRegions}
+          options={options.regions}
         />
         <FilterSelect
           label="Cidade"
           placeholder="Selecione a cidade"
           value={filters.city}
           onChange={handleCityChange}
-          options={filteredCities}
+          options={options.cities}
         />
         <FilterSelect
           label="Bairro"
           placeholder="Selecione o bairro"
           value={filters.neighborhood}
           onChange={handleNeighborhoodChange}
-          options={filteredNeighborhoods}
+          options={options.neighborhoods}
         />
 
         <PriceRangeInput
           minPrice={filters.minPrice}
           maxPrice={filters.maxPrice}
-          onMinChange={(value) => setFilters((prev) => ({ ...prev, minPrice: value }))}
-          onMaxChange={(value) => setFilters((prev) => ({ ...prev, maxPrice: value }))}
+          onMinChange={(value) => updateFilter("minPrice", value)}
+          onMaxChange={(value) => updateFilter("maxPrice", value)}
         />
 
         <RoomSelector
           label="Quartos"
           options={[1, 2, 3, 4]}
           value={filters.bedrooms}
-          onChange={(value) => setFilters((prev) => ({ ...prev, bedrooms: value }))}
+          onChange={(value) => updateFilter("bedrooms", value)}
         />
         <RoomSelector
           label="Suites"
           options={[1, 2, 3, 4]}
           value={filters.suites}
-          onChange={(value) => setFilters((prev) => ({ ...prev, suites: value }))}
+          onChange={(value) => updateFilter("suites", value)}
         />
         <RoomSelector
           label="Banheiros"
           options={[1, 2, 3, 4]}
           value={filters.bathrooms}
-          onChange={(value) => setFilters((prev) => ({ ...prev, bathrooms: value }))}
+          onChange={(value) => updateFilter("bathrooms", value)}
         />
         <RoomSelector
           label="Garagem"
           options={[1, 2, 3, 4]}
           value={filters.garage}
-          onChange={(value) => setFilters((prev) => ({ ...prev, garage: value }))}
+          onChange={(value) => updateFilter("garage", value)}
         />
 
         <AreaSlider
           minArea={filters.minArea}
           maxArea={filters.maxArea}
-          onMinChange={(value) => setFilters((prev) => ({ ...prev, minArea: value }))}
-          onMaxChange={(value) => setFilters((prev) => ({ ...prev, maxArea: value }))}
+          onMinChange={(value) => updateFilter("minArea", value)}
+          onMaxChange={(value) => updateFilter("maxArea", value)}
+          maxAvailableArea={options.maxArea}
         />
       </div>
     </aside>

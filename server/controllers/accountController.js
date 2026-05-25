@@ -1,110 +1,82 @@
-import { Admin, Broker, SuperUser, User } from "../models/index.js";
-import { buildAccountPayload } from "../utils/password.js";
-
-const accountModels = {
-  admins: Admin,
-  brokers: Broker,
-  "super-users": SuperUser,
-  users: User,
-};
-
-function getAccountModel(accountType) {
-  return accountModels[accountType];
-}
+import {
+  createAccount as createAccountService,
+  deleteAccount as deleteAccountService,
+  getAccount as getAccountService,
+  listAccountTypes,
+  listAccounts as listAccountsService,
+  updateAccount as updateAccountService,
+} from "../services/accountService.js";
 
 export function listAccountTypes(_req, res) {
-  res.json(Object.keys(accountModels));
+  res.json(listAccountTypes());
 }
 
 export async function listAccounts(req, res, next) {
   try {
-    const Model = getAccountModel(req.params.accountType);
-
-    if (!Model) {
-      return res.status(404).json({ message: "Tipo de conta nao encontrado." });
-    }
-
-    const accounts = await Model.find().sort({ createdAt: -1 });
+    const accounts = await listAccountsService(req.params.accountType);
     res.json(accounts);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function getAccount(req, res, next) {
   try {
-    const Model = getAccountModel(req.params.accountType);
-
-    if (!Model) {
-      return res.status(404).json({ message: "Tipo de conta nao encontrado." });
-    }
-
-    const account = await Model.findById(req.params.id);
-
-    if (!account) {
-      return res.status(404).json({ message: "Conta nao encontrada." });
-    }
-
+    const account = await getAccountService(
+      req.params.accountType,
+      req.params.id,
+    );
     res.json(account);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function createAccount(req, res, next) {
   try {
-    const Model = getAccountModel(req.params.accountType);
-
-    if (!Model) {
-      return res.status(404).json({ message: "Tipo de conta nao encontrado." });
-    }
-
-    const account = await Model.create(buildAccountPayload(req.body));
+    const account = await createAccountService(
+      req.params.accountType,
+      req.body,
+    );
     res.status(201).json(account);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function updateAccount(req, res, next) {
   try {
-    const Model = getAccountModel(req.params.accountType);
-
-    if (!Model) {
-      return res.status(404).json({ message: "Tipo de conta nao encontrado." });
-    }
-
-    const account = await Model.findByIdAndUpdate(req.params.id, buildAccountPayload(req.body), {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!account) {
-      return res.status(404).json({ message: "Conta nao encontrada." });
-    }
-
+    const account = await updateAccountService(
+      req.params.accountType,
+      req.params.id,
+      req.body,
+    );
     res.json(account);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }
 
 export async function deleteAccount(req, res, next) {
   try {
-    const Model = getAccountModel(req.params.accountType);
-
-    if (!Model) {
-      return res.status(404).json({ message: "Tipo de conta nao encontrado." });
-    }
-
-    const account = await Model.findByIdAndDelete(req.params.id);
-
-    if (!account) {
-      return res.status(404).json({ message: "Conta nao encontrada." });
-    }
-
+    await deleteAccountService(req.params.accountType, req.params.id);
     res.status(204).send();
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 }

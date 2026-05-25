@@ -2,6 +2,9 @@
 .env
 /node_modules/
 .vercel/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 
 # React Router
 /.react-router/

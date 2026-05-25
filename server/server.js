@@ -13,17 +13,28 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 4000;
+<<<<<<< HEAD
 const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
 const allowedOrigins = [
   clientUrl,
   "http://localhost:5173",
   "http://127.0.0.1:5173",
 ].filter(Boolean);
+=======
+const clientUrls = (process.env.CLIENT_URL || "http://localhost:5173")
+  .split(",")
+  .map((url) => url.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+>>>>>>> feature/mongodb-seed
 
 app.use(
   cors({
     origin(origin, callback) {
+<<<<<<< HEAD
       if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+=======
+      if (!origin || clientUrls.includes(origin.replace(/\/$/, ""))) {
+>>>>>>> feature/mongodb-seed
         callback(null, true);
         return;
       }
@@ -39,6 +50,18 @@ app.use("/api/accounts", accountRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/brokers", brokerRoutes);
 
+app.get("/", (_req, res) => {
+  res.json({
+    status: "ok",
+    service: "imobiliaria-api",
+    routes: ["/api/health", "/api/properties"],
+  });
+});
+
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok", service: "imobiliaria-api" });
+});
+
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "imobiliaria-api" });
 });
@@ -46,14 +69,40 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/properties", propertyRoutes);
 
 app.use((req, res) => {
-  res.status(404).json({ message: `Rota nao encontrada: ${req.method} ${req.path}` });
+  res
+    .status(404)
+    .json({ message: `Rota nao encontrada: ${req.method} ${req.path}` });
 });
 
-app.use((error, _req, res, _next) => {
-  console.error(error);
-  const statusCode = error.name === "ValidationError" ? 400 : 500;
+app.use((error, req, res, _next) => {
+  const isCorsError =
+    typeof error?.message === "string" &&
+    error.message.startsWith("Origem nao permitida pelo CORS:");
+  const statusCode = isCorsError
+    ? 403
+    : error.name === "ValidationError"
+      ? 400
+      : 500;
+
+  console.error(
+    "Erro na API",
+    {
+      method: req.method,
+      path: req.originalUrl,
+      statusCode,
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      context: error.context,
+    },
+    error.stack,
+  );
+
   res.status(statusCode).json({
-    message: statusCode === 400 ? error.message : "Erro interno do servidor.",
+    message:
+      statusCode === 400 || isCorsError
+        ? error.message
+        : "Erro interno do servidor.",
   });
 });
 
@@ -64,6 +113,6 @@ connectDatabase()
     });
   })
   .catch((error) => {
-    console.error("Falha ao conectar no MongoDB:", error.message);
+    console.error("Falha ao conectar no PostgreSQL:", error.message);
     process.exit(1);
   });
