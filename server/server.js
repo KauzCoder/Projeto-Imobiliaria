@@ -13,15 +13,41 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 4000;
-const clientUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/$/, "");
+const clientUrls = (process.env.CLIENT_URL || "http://localhost:5173")
+  .split(",")
+  .map((url) => url.trim().replace(/\/$/, ""))
+  .filter(Boolean);
 
-app.use(cors({ origin: clientUrl }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || clientUrls.includes(origin.replace(/\/$/, ""))) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origem nao permitida pelo CORS: ${origin}`));
+    },
+  })
+);
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/accounts", accountRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/brokers", brokerRoutes);
+
+app.get("/", (_req, res) => {
+  res.json({
+    status: "ok",
+    service: "imobiliaria-api",
+    routes: ["/api/health", "/api/properties"],
+  });
+});
+
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok", service: "imobiliaria-api" });
+});
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "imobiliaria-api" });

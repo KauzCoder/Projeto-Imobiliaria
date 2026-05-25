@@ -8,4 +8,5 @@ export default [
   route("contato", "routes/contact.jsx"),
   route("entrar", "routes/login.jsx"),
   route("cadastrar", "routes/register.jsx"),
+  route("api/*", "routes/api-proxy.js"),
 ];
