@@ -104,10 +104,23 @@ export default function SearchMap() {
   );
 
   const filterOptions = useMemo(() => {
-    const countryScope = scopedProperties(normalizedProperties, filters, ["country"]);
-    const regionScope = scopedProperties(normalizedProperties, filters, ["region", "city", "neighborhood"]);
-    const cityScope = scopedProperties(normalizedProperties, filters, ["city", "neighborhood"]);
-    const neighborhoodScope = scopedProperties(normalizedProperties, filters, ["neighborhood"]);
+    const countryScope = normalizedProperties.filter((property) => {
+      if (filters.status && property.status !== filters.status) return false;
+      if (filters.type && property.type !== filters.type) return false;
+      return true;
+    });
+    const regionScope = countryScope.filter((property) => {
+      if (filters.country && property.country !== filters.country) return false;
+      return true;
+    });
+    const cityScope = regionScope.filter((property) => {
+      if (filters.region && property.region !== filters.region) return false;
+      return true;
+    });
+    const neighborhoodScope = cityScope.filter((property) => {
+      if (filters.city && property.city !== filters.city) return false;
+      return true;
+    });
     const objectiveScope = scopedProperties(normalizedProperties, filters, ["status"]);
     const typeScope = scopedProperties(normalizedProperties, filters, ["type"]);
     const maxArea = normalizedProperties.reduce((max, property) => Math.max(max, toNumber(property.area)), 0);
