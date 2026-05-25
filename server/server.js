@@ -28,7 +28,7 @@ app.use(
 
       callback(new Error(`Origem nao permitida pelo CORS: ${origin}`));
     },
-  })
+  }),
 );
 app.use(express.json());
 
@@ -56,14 +56,40 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/properties", propertyRoutes);
 
 app.use((req, res) => {
-  res.status(404).json({ message: `Rota nao encontrada: ${req.method} ${req.path}` });
+  res
+    .status(404)
+    .json({ message: `Rota nao encontrada: ${req.method} ${req.path}` });
 });
 
-app.use((error, _req, res, _next) => {
-  console.error(error);
-  const statusCode = error.name === "ValidationError" ? 400 : 500;
+app.use((error, req, res, _next) => {
+  const isCorsError =
+    typeof error?.message === "string" &&
+    error.message.startsWith("Origem nao permitida pelo CORS:");
+  const statusCode = isCorsError
+    ? 403
+    : error.name === "ValidationError"
+      ? 400
+      : 500;
+
+  console.error(
+    "Erro na API",
+    {
+      method: req.method,
+      path: req.originalUrl,
+      statusCode,
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      context: error.context,
+    },
+    error.stack,
+  );
+
   res.status(statusCode).json({
-    message: statusCode === 400 ? error.message : "Erro interno do servidor.",
+    message:
+      statusCode === 400 || isCorsError
+        ? error.message
+        : "Erro interno do servidor.",
   });
 });
 

@@ -10,11 +10,23 @@ const authModels = {
 };
 
 async function findAccountByEmail(email) {
-  for (const Model of Object.values(authModels)) {
-    const account = await Model.findByEmail(email);
+  const normalizedEmail = email?.trim().toLowerCase();
 
-    if (account) {
-      return { account, Model };
+  for (const [role, Model] of Object.entries(authModels)) {
+    try {
+      const account = await Model.findByEmail(normalizedEmail);
+
+      if (account) {
+        return { account, Model, role };
+      }
+    } catch (error) {
+      error.context = {
+        ...error.context,
+        stage: "findByEmail",
+        role,
+        email: normalizedEmail,
+      };
+      throw error;
     }
   }
 
@@ -39,6 +51,12 @@ export async function register(req, res, next) {
     const account = await Model.create(buildAccountPayload(req.body));
     res.status(201).json(account);
   } catch (error) {
+    error.context = {
+      ...error.context,
+      stage: "register",
+      role: req.body?.role,
+      email: req.body?.email?.trim().toLowerCase(),
+    };
     next(error);
   }
 }
@@ -76,6 +94,11 @@ export async function login(req, res, next) {
       token,
     });
   } catch (error) {
+    error.context = {
+      ...error.context,
+      stage: "login",
+      email: req.body?.email?.trim().toLowerCase(),
+    };
     next(error);
   }
 }
