@@ -22,8 +22,27 @@ const initialFilters = {
   bathrooms: 0,
   garage: 0,
   minArea: 0,
-  maxArea: 1000,
+  maxArea: 0,
 };
+
+function toNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function scopedProperties(properties, filters, ignoredFields = []) {
+  const ignored = new Set(ignoredFields);
+
+  return properties.filter((property) => {
+    if (!ignored.has("country") && filters.country && property.country !== filters.country) return false;
+    if (!ignored.has("region") && filters.region && property.region !== filters.region) return false;
+    if (!ignored.has("city") && filters.city && property.city !== filters.city) return false;
+    if (!ignored.has("neighborhood") && filters.neighborhood && property.neighborhood !== filters.neighborhood) return false;
+    if (!ignored.has("type") && filters.type && property.type !== filters.type) return false;
+    if (!ignored.has("status") && filters.status && property.status !== filters.status) return false;
+    return true;
+  });
+}
 
 export function meta() {
   return [
@@ -84,34 +103,74 @@ export default function SearchMap() {
     [properties],
   );
 
-  const filterOptions = useMemo(
-    () => ({
-      countries: uniqueOptions(normalizedProperties, "country"),
-      regions: uniqueOptions(
-        filters.country
-          ? normalizedProperties.filter((property) => property.country === filters.country)
-          : normalizedProperties,
-        "region"
-      ),
-      cities: uniqueOptions(
-        filters.region
-          ? normalizedProperties.filter((property) => property.region === filters.region)
-          : normalizedProperties,
-        "city"
-      ),
-      neighborhoods: uniqueOptions(
-        filters.city
-          ? normalizedProperties.filter((property) => property.city === filters.city)
-          : normalizedProperties,
-        "neighborhood"
-      ),
-    }),
-    [normalizedProperties, filters.country, filters.region, filters.city],
-  );
+  const filterOptions = useMemo(() => {
+    const countryScope = scopedProperties(normalizedProperties, filters, ["country"]);
+    const regionScope = scopedProperties(normalizedProperties, filters, ["region", "city", "neighborhood"]);
+    const cityScope = scopedProperties(normalizedProperties, filters, ["city", "neighborhood"]);
+    const neighborhoodScope = scopedProperties(normalizedProperties, filters, ["neighborhood"]);
+    const objectiveScope = scopedProperties(normalizedProperties, filters, ["status"]);
+    const typeScope = scopedProperties(normalizedProperties, filters, ["type"]);
+    const maxArea = normalizedProperties.reduce((max, property) => Math.max(max, toNumber(property.area)), 0);
+
+    return {
+      countries: uniqueOptions(countryScope, "country"),
+      regions: uniqueOptions(regionScope, "region"),
+      cities: uniqueOptions(cityScope, "city"),
+      neighborhoods: uniqueOptions(neighborhoodScope, "neighborhood"),
+      statuses: uniqueOptions(objectiveScope, "status"),
+      types: uniqueOptions(typeScope, "type"),
+      maxArea: Math.max(100, Math.ceil(maxArea / 50) * 50),
+    };
+  }, [normalizedProperties, filters]);
+
+  useEffect(() => {
+    setFilters((currentFilters) => {
+      const nextFilters = { ...currentFilters };
+      let changed = false;
+
+      const clearField = (field) => {
+        if (nextFilters[field]) {
+          nextFilters[field] = "";
+          changed = true;
+        }
+      };
+
+      if (currentFilters.status && !filterOptions.statuses.includes(currentFilters.status)) {
+        clearField("status");
+      }
+
+      if (currentFilters.type && !filterOptions.types.includes(currentFilters.type)) {
+        clearField("type");
+      }
+
+      if (currentFilters.country && !filterOptions.countries.includes(currentFilters.country)) {
+        clearField("country");
+        clearField("region");
+        clearField("city");
+        clearField("neighborhood");
+      } else if (currentFilters.region && !filterOptions.regions.includes(currentFilters.region)) {
+        clearField("region");
+        clearField("city");
+        clearField("neighborhood");
+      } else if (currentFilters.city && !filterOptions.cities.includes(currentFilters.city)) {
+        clearField("city");
+        clearField("neighborhood");
+      } else if (
+        currentFilters.neighborhood &&
+        !filterOptions.neighborhoods.includes(currentFilters.neighborhood)
+      ) {
+        clearField("neighborhood");
+      }
+
+      return changed ? nextFilters : currentFilters;
+    });
+  }, [filterOptions]);
 
   const filteredProperties = useMemo(() => {
-    const minPrice = Number(filters.minPrice || 0);
-    const maxPrice = Number(filters.maxPrice || 0);
+    const minPrice = toNumber(filters.minPrice);
+    const maxPrice = toNumber(filters.maxPrice);
+    const minArea = toNumber(filters.minArea);
+    const maxArea = toNumber(filters.maxArea);
 
     return normalizedProperties.filter((property) => {
       if (filters.country && property.country !== filters.country) return false;
@@ -126,7 +185,8 @@ export default function SearchMap() {
       if (filters.suites > 0 && property.suites < filters.suites) return false;
       if (filters.bathrooms > 0 && property.baths < filters.bathrooms) return false;
       if (filters.garage > 0 && property.garage < filters.garage) return false;
-      if (property.area < filters.minArea || property.area > filters.maxArea) return false;
+      if (minArea > 0 && property.area < minArea) return false;
+      if (maxArea > 0 && property.area > maxArea) return false;
       return true;
     });
   }, [filters, normalizedProperties]);
@@ -196,7 +256,7 @@ export default function SearchMap() {
       </button>
 
       <div className="hidden lg:block">
-        <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} options={filterOptions} properties={normalizedProperties} />
+        <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} options={filterOptions} />
       </div>
 
       {showFilters && (
@@ -222,7 +282,7 @@ export default function SearchMap() {
               </button>
             </div>
             <div className="h-[calc(100vh-64px)] overflow-y-auto">
-              <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} options={filterOptions} properties={normalizedProperties} />
+              <FilterSidebar filters={filters} setFilters={setFilters} onReset={resetFilters} options={filterOptions} />
             </div>
           </div>
         </div>

@@ -25,7 +25,7 @@ export function PriceRangeInput({ minPrice, maxPrice, onMinChange, onMaxChange }
             value={localMin}
             onChange={(event) => setLocalMin(event.target.value)}
             onBlur={(event) => onMinChange(event.target.value)}
-            placeholder="Mín"
+            placeholder="Min"
             className="h-8 bg-transparent px-3 text-xs text-black outline-none"
           />
           <input
@@ -35,7 +35,7 @@ export function PriceRangeInput({ minPrice, maxPrice, onMinChange, onMaxChange }
             value={localMax}
             onChange={(event) => setLocalMax(event.target.value)}
             onBlur={(event) => onMaxChange(event.target.value)}
-            placeholder="Máx"
+            placeholder="Max"
             className="h-8 bg-transparent px-3 text-xs text-black outline-none"
           />
         </div>
