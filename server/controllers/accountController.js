@@ -1,19 +1,19 @@
 import {
-  createAccount,
-  deleteAccount,
-  getAccount,
-  listAccountTypes,
-  listAccounts,
-  updateAccount,
+  createAccount as createAccountService,
+  deleteAccount as deleteAccountService,
+  getAccount as getAccountService,
+  listAccountTypes as listAccountTypesService,
+  listAccounts as listAccountsService,
+  updateAccount as updateAccountService,
 } from "../services/accountService.js";
 
 export function listAccountTypes(_req, res) {
-  res.json(listAccountTypes());
+  res.json(listAccountTypesService());
 }
 
 export async function listAccounts(req, res, next) {
   try {
-    const accounts = await listAccounts(req.params.accountType);
+    const accounts = await listAccountsService(req.params.accountType);
     res.json(accounts);
   } catch (error) {
     if (error.statusCode) {
@@ -25,7 +25,7 @@ export async function listAccounts(req, res, next) {
 
 export async function getAccount(req, res, next) {
   try {
-    const account = await getAccount(req.params.accountType, req.params.id);
+    const account = await getAccountService(req.params.accountType, req.params.id);
     res.json(account);
   } catch (error) {
     if (error.statusCode) {
@@ -37,7 +37,7 @@ export async function getAccount(req, res, next) {
 
 export async function createAccount(req, res, next) {
   try {
-    const account = await createAccount(req.params.accountType, req.body);
+    const account = await createAccountService(req.params.accountType, req.body);
     res.status(201).json(account);
   } catch (error) {
     if (error.statusCode) {
@@ -49,7 +49,7 @@ export async function createAccount(req, res, next) {
 
 export async function updateAccount(req, res, next) {
   try {
-    const account = await updateAccount(
+    const account = await updateAccountService(
       req.params.accountType,
       req.params.id,
       req.body,
@@ -65,7 +65,7 @@ export async function updateAccount(req, res, next) {
 
 export async function deleteAccount(req, res, next) {
   try {
-    await deleteAccount(req.params.accountType, req.params.id);
+    await deleteAccountService(req.params.accountType, req.params.id);
     res.status(204).send();
   } catch (error) {
     if (error.statusCode) {
