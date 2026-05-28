@@ -1,17 +1,17 @@
 import {
-  addFavoriteProperty,
-  createUser,
-  deleteUser,
-  getFavoriteProperties,
-  getUserById,
-  listUsers,
-  removeFavoriteProperty,
-  updateUser,
+  addFavoriteProperty as addFavoritePropertyService,
+  createUser as createUserService,
+  deleteUser as deleteUserService,
+  getFavoriteProperties as getFavoritePropertiesService,
+  getUserById as getUserByIdService,
+  listUsers as listUsersService,
+  removeFavoriteProperty as removeFavoritePropertyService,
+  updateUser as updateUserService,
 } from "../services/userService.js";
 
 export async function listUsers(req, res, next) {
   try {
-    const users = await listUsers();
+    const users = await listUsersService();
     res.json(users);
   } catch (error) {
     next(error);
@@ -20,7 +20,7 @@ export async function listUsers(req, res, next) {
 
 export async function getUser(req, res, next) {
   try {
-    const user = await getUserById(req.params.id);
+    const user = await getUserByIdService(req.params.id);
     res.json(user);
   } catch (error) {
     if (error.statusCode) {
@@ -32,7 +32,7 @@ export async function getUser(req, res, next) {
 
 export async function getFavoriteProperties(req, res, next) {
   try {
-    const favorites = await getFavoriteProperties(req.params.id);
+    const favorites = await getFavoritePropertiesService(req.params.id);
     res.json(favorites);
   } catch (error) {
     if (error.statusCode) {
@@ -45,7 +45,7 @@ export async function getFavoriteProperties(req, res, next) {
 export async function addFavoriteProperty(req, res, next) {
   try {
     const propertyId = req.body.propertyId || req.params.propertyId;
-    const favorites = await addFavoriteProperty(req.params.id, propertyId);
+    const favorites = await addFavoritePropertyService(req.params.id, propertyId);
     res.json(favorites);
   } catch (error) {
     if (error.statusCode) {
@@ -57,7 +57,7 @@ export async function addFavoriteProperty(req, res, next) {
 
 export async function removeFavoriteProperty(req, res, next) {
   try {
-    const favorites = await removeFavoriteProperty(
+    const favorites = await removeFavoritePropertyService(
       req.params.id,
       req.params.propertyId,
     );
@@ -72,7 +72,7 @@ export async function removeFavoriteProperty(req, res, next) {
 
 export async function deleteUser(req, res, next) {
   try {
-    await deleteUser(req.params.id);
+    await deleteUserService(req.params.id);
     res.status(204).send();
   } catch (error) {
     if (error.statusCode) {
@@ -84,7 +84,7 @@ export async function deleteUser(req, res, next) {
 
 export async function updateUser(req, res, next) {
   try {
-    const user = await updateUser(req.params.id, req.body);
+    const user = await updateUserService(req.params.id, req.body);
     res.json(user);
   } catch (error) {
     if (error.statusCode) {
@@ -96,7 +96,7 @@ export async function updateUser(req, res, next) {
 
 export async function createUser(req, res, next) {
   try {
-    const user = await createUser(req.body);
+    const user = await createUserService(req.body);
     res.status(201).json(user);
   } catch (error) {
     next(error);
